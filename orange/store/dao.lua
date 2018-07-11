@@ -514,13 +514,13 @@ function _M.config_upstreams()
 
     local function server_compose(ips,flag)
         local str = ""
-        if flag == "lan" then
+        if flag == "primary" then
             for _ ,ip in pairs(ips) do
-                str = str .. "server "..ip..";"
+                str = str .. "server "..ip.." fail_timeout=60;"
             end
         else
             for _ ,ip in pairs(ips) do
-                str = str .. "server "..ip.." backup;"
+                str = str .. "server "..ip.." fail_timeout=60 backup;"
             end
         end
         return str
@@ -534,8 +534,8 @@ function _M.config_upstreams()
     end
 
     for  n, v in pairs(upstreams) do
-        local wan_server = server_compose(v["wan_ips"],"wan")
-        local lan_server = server_compose(v["lan_ips"],"lan")
+        local wan_server = server_compose(v["primary_ips"],"primary")
+        local lan_server = server_compose(v["backup_ips"],"backup")
         local upstream_server = wan_server..lan_server.."keepalive 512;"
         local status, rv = dyups.update(n,upstream_server)
         if status ~= ngx.HTTP_OK then
