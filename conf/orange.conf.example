@@ -11,7 +11,8 @@
         "signature_auth",
         "waf",
         "divide",
-        "kvstore"
+        "kvstore",
+	    "upstream"
     ],
     "store": "mysql",
     "store_mysql": {
