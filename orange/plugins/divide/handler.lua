@@ -23,8 +23,8 @@ local function filter_rules(sid, plugin, ngx_var, ngx_var_uri, ngx_var_host)
         return false
     end
 
-    for rid, rule in ipairs(rules) do
-        ngx.log(ngx.INFO, "==[Divide][START TO PASS THROUGH RULE:", rid, "]")
+    for _, rule in ipairs(rules) do
+        ngx.log(ngx.INFO, "==[Divide][START TO PASS THROUGH RULE:", rule.id, "]")
         if rule.enable == true then
             -- judge阶段
             local pass = judge_util.judge_rule(rule, plugin)
@@ -35,7 +35,7 @@ local function filter_rules(sid, plugin, ngx_var, ngx_var_uri, ngx_var_host)
             -- handle阶段
             if pass then
                 if rule.log == true then
-                    ngx.log(ngx.INFO, "[Divide-Match-Rule] ", rid, " host:", ngx_var_host, " uri:", ngx_var_uri)
+                    ngx.log(ngx.INFO, "[Divide-Match-Rule] ", rule.id, " host:", ngx_var_host, " uri:", ngx_var_uri)
                 end
 
                 local extractor_type = rule.extractor.type
@@ -46,18 +46,18 @@ local function filter_rules(sid, plugin, ngx_var, ngx_var_uri, ngx_var_host)
                         ngx_var.upstream_host = handle_util.build_upstream_host(extractor_type, rule.handler.upstream_host, variables, plugin)
                     end
 
-                    ngx_var.upstream_url = handle_util.build_upstream_url(extractor_type, rule.upstream_url, variables, plugin)
+                    ngx_var.upstream_url = handle_util.build_upstream_url(extractor_type, rule.handler.upstream_url, variables, plugin)
 
-                    ngx.log(ngx.INFO, "[Divide-Match-Rule:upstream] ", rid, " extractor_type:", extractor_type,
+                    ngx.log(ngx.INFO, "[Divide-Match-Rule:upstream] ", rule.id, " extractor_type:", extractor_type,
                         " upstream_host:", ngx_var.upstream_host, " upstream_url:", ngx_var.upstream_url)
                 else
-                    ngx.log(ngx.INFO, "[Divide-Match-Rule:error] no handler or upstream_url. ", rid, " host:", ngx_var_host, " uri:", ngx_var_uri)
+                    ngx.log(ngx.INFO, "[Divide-Match-Rule:error] no handler or upstream_url. ", rule.id, " host:", ngx_var_host, " uri:", ngx_var_uri)
                 end
 
                 return true
             else
                 if rule.log == true then
-                    ngx.log(ngx.INFO, "[Divide-NotMatch-Rule] ", rid, " host:", ngx_var_host, " uri:", ngx_var_uri)
+                    ngx.log(ngx.INFO, "[Divide-NotMatch-Rule] ", rule.id, " host:", ngx_var_host, " uri:", ngx_var_uri)
                 end
             end
         end
