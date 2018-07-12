@@ -33,17 +33,6 @@ local _M = {}
 
 ---
 -- @param extractor_type number, the extractor type
--- @param url_tmpl string
---  extractor_type==1 then url template, contains variable placeholder ${number}, e.g. /user/${1}/friends/${2}
---  extractor_type==2 then url template, contains variable placeholder {{key.[subkey]}}, e.g. /user/{{host}}/friends/{{header.uid}}
--- @param variables array or map: variables used to compose url
---
-function _M.build_url(extractor_type, url_tmpl, variables)
-    return compose(extractor_type, url_tmpl, variables)
-end
-
----
--- @param extractor_type number, the extractor type
 -- @param uri_tmpl string
 --  extractor_type==1 then url template, contains variable placeholder ${number}, e.g. /user/${1}/friends/${2}
 --  extractor_type==2 then url template, contains variable placeholder {{key.[subkey]}}, e.g. /user/{{host}}/friends/{{header.uid}}

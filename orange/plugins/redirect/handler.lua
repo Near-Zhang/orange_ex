@@ -16,6 +16,7 @@ local function filter_rules(sid, plugin, ngx_var_uri, ngx_var_host, ngx_var_sche
     end
 
     for j, rule in ipairs(rules) do
+        ngx.log(ngx.INFO, "[Redirect][START TO PASS THROUGH RULE:", rule.id, "]")
         if rule.enable == true then
             -- judge阶段
             local pass = judge_util.judge_rule(rule, plugin)
@@ -24,6 +25,10 @@ local function filter_rules(sid, plugin, ngx_var_uri, ngx_var_host, ngx_var_sche
 
             -- handle阶段
             if pass then
+                if rule.log == true then
+                    ngx.log(ngx.INFO, "[Redirect][Match-Rule:", rule.id, "] host:", ngx_var_host, " uri:", ngx_var_uri)
+                end
+
                 local handle = rule.handle
                 if handle and handle.url_tmpl then
                     local to_redirect = handle_util.build_url(rule.extractor.type, handle.url_tmpl, variables)
@@ -38,7 +43,7 @@ local function filter_rules(sid, plugin, ngx_var_uri, ngx_var_host, ngx_var_sche
                         end
 
                         if ngx_var_args ~= nil then
-                            if string_find(to_redirect, '?') then -- 不存在?，直接缀上url args
+                            if string_find(to_redirect, '?') then -- 不存在?，直接用？接上url_args，否则&接上url_args
                                 if handle.trim_qs ~= true then
                                     to_redirect = to_redirect .. "&" .. ngx_var_args
                                 end
@@ -50,14 +55,28 @@ local function filter_rules(sid, plugin, ngx_var_uri, ngx_var_host, ngx_var_sche
                         end
 
                         if handle.log == true then
-                            ngx.log(ngx.ERR, "[Redirect] ", ngx_var_uri, " to:", to_redirect)
+                            ngx.log(ngx.INFO, "[Redirect][TO-Redirect]", ngx_var_uri, " to:", to_redirect, " status:", redirect_status)
                         end
 
                         ngx_redirect(to_redirect, redirect_status)
+
+                    else
+                        if handle.log == true then
+                            ngx.log(ngx.ERR, "[Redirect][Match-Rule-Error] redirect_url = ngx.var.uri", " host:", ngx_var_host, " uri:", ngx_var_uri )
+                        end
+                    end
+                    return true
+
+                else
+                    if handle.log == true then
+                        ngx.log(ngx.ERR, "[Redirect][Match-Rule-Error] no handler or no url_tmpl", " host:", ngx_var_host, " uri:", ngx_var_uri )
                     end
                 end
 
-                return true
+            else
+                if rule.log == true then
+                    ngx.log(ngx.INFO, "[Redirect-NotMatch-Rule:", rule.id, "] host:", ngx_var_host, " uri:", ngx_var_uri)
+                end    
             end
         end
     end
@@ -92,14 +111,14 @@ function RedirectHandler:redirect()
     local ngx_var_args = ngx_var.args
 
     for i, sid in ipairs(ordered_selectors) do
-        ngx.log(ngx.INFO, "==[Redirect][PASS THROUGH SELECTOR:", sid, "]")
+        ngx.log(ngx.INFO, "[Redirect][START TO PASS THROUGH SELECTOR:", sid, "]")
         local selector = selectors[sid]
         if selector and selector.enable == true then
             local selector_pass 
-            if selector.type == 0 then -- 全流量选择器
+            if selector.type == 0 then -- 全流量 selector
                 selector_pass = true
             else
-                selector_pass = judge_util.judge_selector(selector, "redirect")-- selector judge
+                selector_pass = judge_util.judge_selector(selector, "redirect") -- selector judge
             end
 
             if selector_pass then
@@ -108,7 +127,7 @@ function RedirectHandler:redirect()
                 end
 
                 local stop = filter_rules(sid, "redirect", ngx_var_uri, ngx_var_host, ngx_var_scheme, ngx_var_args)
-                if stop then -- 不再执行此插件其他逻辑
+                if stop then -- 已匹配该selector中的rule，不再进行执行通过后续的selector
                     return
                 end
             else
@@ -117,7 +136,7 @@ function RedirectHandler:redirect()
                 end
             end
 
-            -- if continue or break the loop
+            -- 没有通过该selector或不匹配该selector中的所有rule，判断是否继续匹配下面的selector
             if selector.handle and selector.handle.continue == true then
                 -- continue next selector
             else
