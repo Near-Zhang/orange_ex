@@ -25,7 +25,7 @@ local function filter_rules(sid, plugin, ngx_var, ngx_var_uri, ngx_var_host)
 
     for _, rule in ipairs(rules) do
         if rule.handle and rule.handle.log == true then
-            ngx.log(ngx.INFO, "[Divide][START TO PASS THROUGH RULE:", rule.id, "]")
+            ngx.log(ngx.INFO, "[Divide][Start To Pass Through Rule:", rule.id, "]")
         end
 
         if rule.enable == true then
@@ -37,36 +37,36 @@ local function filter_rules(sid, plugin, ngx_var, ngx_var_uri, ngx_var_host)
 
             -- handle阶段
             if pass then
-                local handler = rule.handler
-                if handler and handler.log == true then
+                local handle = rule.handle
+                if handle and handle.log == true then
                     ngx.log(ngx.INFO, "[Divide][Match-Rule:", rule.id, "]")
                 end
 
                 local extractor_type = rule.extractor.type
-                if handler and handler.upstream_url then
-                    if not handler.upstream_host or handler.upstream_host=="" then -- host默认取请求的host
+                if handle and handle.upstream_url then
+                    if not handle.upstream_host or handle.upstream_host=="" then -- host默认取请求的host
                         ngx_var.upstream_host = ngx_var_host
                     else 
-                        ngx_var.upstream_host = handle_util.build_upstream_host(extractor_type, handler.upstream_host, variables, plugin)
+                        ngx_var.upstream_host = handle_util.build_upstream_host(extractor_type, handle.upstream_host, variables, plugin)
                     end
 
-                     ngx_var.upstream_url = handle_util.build_upstream_url(extractor_type, handler.upstream_url, variables, plugin)
+                     ngx_var.upstream_url = handle_util.build_upstream_url(extractor_type, handle.upstream_url, variables, plugin)
 
-                    if handler.log == true then
+                    if handle.log == true then
                         ngx.log(ngx.INFO, "[Divide][Proxy-Upstream]"," extractor_type:", extractor_type,
                             " upstream_host:", ngx_var.upstream_host, " upstream_url:", ngx_var.upstream_url)
                     end
 
                 else
-                    if handler.log == true then
-                        ngx.log(ngx.ERR, "[Divide][Match-Rule-Error] no handler or upstream_url")
+                    if handle.log == true then
+                        ngx.log(ngx.ERR, "[Divide][Match-Rule-Error] no handle or upstream_url")
                     end
                 end
 
                 return true
             else
                 if rule.handle and rule.handle.log == true then
-                    ngx.log(ngx.INFO, "[Divide-NotMatch-Rule:", rule.id, "]")
+                    ngx.log(ngx.INFO, "[Divide][NotMatch-Rule:", rule.id, "]")
                 end
             end
         end
@@ -103,7 +103,7 @@ function DivideHandler:access(conf)
     for i, sid in ipairs(ordered_selectors) do
         local selector = selectors[sid]
         if selector.handle and selector.handle.log == true then
-            ngx.log(ngx.INFO, "[Divide][START TO PASS THROUGH SELECTOR:", sid, "]")
+            ngx.log(ngx.INFO, "[Divide][Start To Pass Through Selector:", sid, "]")
         end
 
         if selector and selector.enable == true then
@@ -116,7 +116,7 @@ function DivideHandler:access(conf)
 
             if selector_pass then
                 if selector.handle and selector.handle.log == true then
-                    ngx.log(ngx.INFO, "[Divide][PASS-SELECTOR:", sid, "]")
+                    ngx.log(ngx.INFO, "[Divide][Pass-Selector:", sid, "]")
                 end
 
                 local stop = filter_rules(sid, "divide", ngx_var, ngx_var_uri, ngx_var_host)
@@ -124,11 +124,11 @@ function DivideHandler:access(conf)
                     return
                 end
                 if selector.handle and selector.handle.log == true then
-                    ngx.log(ngx.INFO, "[Divide][NOT-PASS-ANY-RULE-IN-SELECTOR:", sid, "]")
+                    ngx.log(ngx.INFO, "[Divide][NotMatch-Any-Rule-In-Selector:", sid, "]")
                 end
             else
                 if selector.handle and selector.handle.log == true then
-                    ngx.log(ngx.INFO, "[Divide][NOT-PASS-SELECTOR:", sid, "]")
+                    ngx.log(ngx.INFO, "[Divide][Not-Pass-Selector:", sid, "]")
                 end
             end
 

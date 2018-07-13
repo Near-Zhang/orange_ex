@@ -5,7 +5,7 @@
 - 指定重定向类型 redirect_status，默认301
 - 指定最终的重定向目标url是否附带query参数 trim_qs
 
-#### rule 的 handler 格式
+#### rule 的 handle 格式
     {
         url_tmpl: '重定向url'
         redirect_status: '301/302'

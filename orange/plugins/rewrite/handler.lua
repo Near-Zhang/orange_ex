@@ -20,8 +20,8 @@ local function filter_rules(sid, plugin, ngx_var_uri)
     end
 
     for i, rule in ipairs(rules) do
-        if handle and handle.log == true then
-            ngx.log(ngx.INFO, "[Rewrite][START TO PASS THROUGH RULE:", rule.id, "]")
+        if rule.handle and rule.handle.log == true then
+            ngx.log(ngx.INFO, "[Rewrite][Start To Pass Through Rule:", rule.id, "]")
         end
 
         if rule.enable == true then
@@ -79,7 +79,7 @@ local function filter_rules(sid, plugin, ngx_var_uri)
                 return true
             else
                 if rule.handle and rule.handle.log == true then
-                    ngx.log(ngx.INFO, "[Rewrite-NotMatch-Rule:", rule.id, "]")
+                    ngx.log(ngx.INFO, "[Rewrite][NotMatch-Rule:", rule.id, "]")
                 end
             end
         end
@@ -113,7 +113,7 @@ function RewriteHandler:rewrite(conf)
     for i, sid in ipairs(ordered_selectors) do
         local selector = selectors[sid]
         if selector.handle and selector.handle.log == true then
-            ngx.log(ngx.INFO, "[Rewrite][START TO PASS THROUGH SELECTOR:", sid, "]")
+            ngx.log(ngx.INFO, "[Rewrite][Start To Pass Through Selector:", sid, "]")
         end
 
         if selector and selector.enable == true then
@@ -126,7 +126,7 @@ function RewriteHandler:rewrite(conf)
 
             if selector_pass then
                 if selector.handle and selector.handle.log == true then
-                    ngx.log(ngx.INFO, "[Rewrite][PASS-SELECTOR:", sid, "]")
+                    ngx.log(ngx.INFO, "[Rewrite][Pass-Selector:", sid, "]")
                 end
 
                 local stop = filter_rules(sid, "rewrite", ngx_var_uri)
@@ -134,11 +134,11 @@ function RewriteHandler:rewrite(conf)
                     return
                 end
                 if selector.handle and selector.handle.log == true then
-                    ngx.log(ngx.INFO, "[Rewrite][NOT-PASS-ANY-RULE-IN-SELECTOR:", sid, "]")
+                    ngx.log(ngx.INFO, "[Rewrite][NotMatch-Any-Rule-In-Selector:", sid, "]")
                 end
             else
                 if selector.handle and selector.handle.log == true then
-                    ngx.log(ngx.INFO, "[Rewrite][NOT-PASS-SELECTOR:", sid, "]")
+                    ngx.log(ngx.INFO, "[Rewrite][Not-Pass-Selector:", sid, "]")
                 end
             end
 
