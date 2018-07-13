@@ -6,7 +6,8 @@
 
 #### rule 的 handler 格式
     {
-    	upstream_url:"目标上游"
-    	upstream_host:"可默认为空"
+    	upstream_url: "上游url"
+    	upstream_host: "可为空"
+    	log: "false/true"
     }
 

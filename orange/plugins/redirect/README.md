@@ -10,4 +10,5 @@
         url_tmpl: '重定向url'
         redirect_status: '301/302'
         trim_qs: 'true/false'
+        log: 'true/false'
     }

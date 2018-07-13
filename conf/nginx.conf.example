@@ -8,6 +8,7 @@ events {
 env ORANGE_CONF;
 
 http {
+    server_tokens off ;
     resolver 114.114.114.114 8.8.8.8;
     charset UTF-8;
     include ./mime.types;
@@ -28,8 +29,21 @@ http {
         location / {
                 dyups_interface;
         }
-    }   
-	
+    }
+
+    # default upstream server
+    server {
+        listen 8080;
+        server_name localhost;
+
+        location / {
+            content_by_lua_block {
+                ngx.status = 404
+                ngx.say([[404! upstream not found. Host: ]] .. ngx.var.host .. "  URI: " .. ngx.var.uri)
+            }
+        }
+    }
+   
     include nginx.conf.d/orange.conf;
     
     include nginx.conf.d/main_server.conf;
