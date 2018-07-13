@@ -38,6 +38,10 @@ local _M = {}
 --  extractor_type==2 then url template, contains variable placeholder {{key.[subkey]}}, e.g. /user/{{host}}/friends/{{header.uid}}
 -- @param variables array or map: variables used to compose url
 --
+function _M.build_url(extractor_type, url_tmpl, variables)
+    return compose(extractor_type, url_tmpl, variables)
+end
+
 function _M.build_uri(extractor_type, uri_tmpl, variables)
     return compose(extractor_type, uri_tmpl, variables)
 end

@@ -29,7 +29,6 @@ http {
                 dyups_interface;
         }
     }   
-
 	
     include nginx.conf.d/orange.conf;
     

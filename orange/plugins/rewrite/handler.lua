@@ -20,26 +20,36 @@ local function filter_rules(sid, plugin, ngx_var_uri)
     end
 
     for i, rule in ipairs(rules) do
+        if handle and handle.log == true then
+            ngx.log(ngx.INFO, "[Rewrite][START TO PASS THROUGH RULE:", rule.id, "]")
+        end
+
         if rule.enable == true then
             -- judge阶段
-            local pass = judge_util.judge_rule(rule, "rewrite")
+            local pass = judge_util.judge_rule(rule, plugin)
             -- extract阶段
             local variables = extractor_util.extract_variables(rule.extractor)
 
             -- handle阶段
             if pass then
                 local handle = rule.handle
+                if handle and handle.log == true then
+                    ngx.log(ngx.INFO, "[Rewrite][Match-Rule:", rule.id, "]")
+                end
+
                 if handle and handle.uri_tmpl then
-                    local to_rewrite = handle_util.build_uri(rule.extractor.type, handle.uri_tmpl, variables)
-                    if to_rewrite and to_rewrite ~= ngx_var_uri then
+                    local rewrite_uri = handle_util.build_uri(rule.extractor.type, handle.uri_tmpl, variables)
+
+                    if rewrite_uri and rewrite_uri ~= ngx_var_uri then
+
                         if handle.log == true then
-                            ngx.log(ngx.INFO, "[Rewrite] ", ngx_var_uri, " to:", to_rewrite)
+                            ngx.log(ngx.INFO, "[Rewrite][To-Rewrite] to:", rewrite_uri)
                         end
 
-                        local from, to, err = ngx_re_find(to_rewrite, "[%?]{1}", "jo")
+                        local from, to, err = ngx_re_find(rewrite_uri, "[%?]{1}", "jo")
                         if not err and from and from >= 1 then
-                            --local qs = ngx_re_sub(to_rewrite, "[A-Z0-9a-z-_/]*[%?]{1}", "", "jo")
-                            local qs = string_sub(to_rewrite, from+1)
+                            local qs = string_sub(rewrite_uri, from+1)
+                            rewrite_uri = string_sub(rewrite_uri, 1, from-1)
                             if qs then
                                 local args = ngx_decode_args(qs, 0)
                                 if args then 
@@ -47,11 +57,30 @@ local function filter_rules(sid, plugin, ngx_var_uri)
                                 end
                             end
                         end
-                        ngx_set_uri(to_rewrite, true)
+
+                        local jump = false
+                        if handle.jump and type(handle.jump) == "boolean" then
+                            jump = handle.jump
+                        end
+   
+                        ngx_set_uri(rewrite_uri, jump)
+                                                                                   
+                    else
+                        if handle.log == true then
+                            ngx.log(ngx.ERR, "[Rewrite][Match-Rule-Error] the rewrite_uri is nil or equal to var.ngx.uri")
+                        end    
+                    end
+                else
+                    if handle.log == true then
+                        ngx.log(ngx.ERR, "[Rewrite][Match-Rule-Error] no handler or uri_tmpl ")
                     end
                 end
 
                 return true
+            else
+                if rule.handle and rule.handle.log == true then
+                    ngx.log(ngx.INFO, "[Rewrite-NotMatch-Rule:", rule.id, "]")
+                end
             end
         end
     end
@@ -63,7 +92,7 @@ local RewriteHandler = BasePlugin:extend()
 RewriteHandler.PRIORITY = 2000
 
 function RewriteHandler:new(store)
-    RewriteHandler.super.new(self, "rewrite-plugin")
+    RewriteHandler.super.new(self, "Rewrite-plugin")
     self.store = store
 end
 
@@ -80,12 +109,16 @@ function RewriteHandler:rewrite(conf)
     end
 
     local ngx_var_uri = ngx.var.uri
+
     for i, sid in ipairs(ordered_selectors) do
-        ngx.log(ngx.INFO, "==[Rewrite][PASS THROUGH SELECTOR:", sid, "]")
         local selector = selectors[sid]
+        if selector.handle and selector.handle.log == true then
+            ngx.log(ngx.INFO, "[Rewrite][START TO PASS THROUGH SELECTOR:", sid, "]")
+        end
+
         if selector and selector.enable == true then
             local selector_pass 
-            if selector.type == 0 then -- 全流量选择器
+            if selector.type == 0 then -- 全流量selector
                 selector_pass = true
             else
                 selector_pass = judge_util.judge_selector(selector, "rewrite")-- selector judge
@@ -93,20 +126,23 @@ function RewriteHandler:rewrite(conf)
 
             if selector_pass then
                 if selector.handle and selector.handle.log == true then
-                    ngx.log(ngx.INFO, "[Rewrite][PASS-SELECTOR:", sid, "] ", ngx_var_uri)
+                    ngx.log(ngx.INFO, "[Rewrite][PASS-SELECTOR:", sid, "]")
                 end
 
                 local stop = filter_rules(sid, "rewrite", ngx_var_uri)
-                if stop then -- 不再执行此插件其他逻辑
+                if stop then -- 已匹配该selector中的rule，不再进行执行通过后续的selector
                     return
+                end
+                if selector.handle and selector.handle.log == true then
+                    ngx.log(ngx.INFO, "[Rewrite][NOT-PASS-ANY-RULE-IN-SELECTOR:", sid, "]")
                 end
             else
                 if selector.handle and selector.handle.log == true then
-                    ngx.log(ngx.INFO, "[Rewrite][NOT-PASS-SELECTOR:", sid, "] ", ngx_var_uri)
+                    ngx.log(ngx.INFO, "[Rewrite][NOT-PASS-SELECTOR:", sid, "]")
                 end
             end
 
-            -- if continue or break the loop
+            -- 没有通过该selector或不匹配该selector中的所有rule，判断是否继续匹配下面的selector
             if selector.handle and selector.handle.continue == true then
                 -- continue next selector
             else

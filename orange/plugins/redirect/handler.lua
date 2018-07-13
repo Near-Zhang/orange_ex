@@ -16,7 +16,10 @@ local function filter_rules(sid, plugin, ngx_var_uri, ngx_var_host, ngx_var_sche
     end
 
     for j, rule in ipairs(rules) do
-        ngx.log(ngx.INFO, "[Redirect][START TO PASS THROUGH RULE:", rule.id, "]")
+        if rule.handle and rule.handle.log == true then
+            ngx.log(ngx.INFO, "[Redirect][START TO PASS THROUGH RULE:", rule.id, "]")
+        end
+
         if rule.enable == true then
             -- judge阶段
             local pass = judge_util.judge_rule(rule, plugin)
@@ -25,11 +28,11 @@ local function filter_rules(sid, plugin, ngx_var_uri, ngx_var_host, ngx_var_sche
 
             -- handle阶段
             if pass then
-                if rule.log == true then
-                    ngx.log(ngx.INFO, "[Redirect][Match-Rule:", rule.id, "] host:", ngx_var_host, " uri:", ngx_var_uri)
+                local handle = rule.handle
+                if handle and handle.log == true then
+                    ngx.log(ngx.INFO, "[Redirect][Match-Rule:", rule.id, "]")
                 end
 
-                local handle = rule.handle
                 if handle and handle.url_tmpl then
                     local to_redirect = handle_util.build_url(rule.extractor.type, handle.url_tmpl, variables)
                     if to_redirect and to_redirect ~= ngx_var_uri then
@@ -55,27 +58,27 @@ local function filter_rules(sid, plugin, ngx_var_uri, ngx_var_host, ngx_var_sche
                         end
 
                         if handle.log == true then
-                            ngx.log(ngx.INFO, "[Redirect][TO-Redirect]", ngx_var_uri, " to:", to_redirect, " status:", redirect_status)
+                            ngx.log(ngx.INFO, "[Redirect][TO-Redirect] to:", to_redirect, " status:", redirect_status)
                         end
 
                         ngx_redirect(to_redirect, redirect_status)
 
                     else
                         if handle.log == true then
-                            ngx.log(ngx.ERR, "[Redirect][Match-Rule-Error] redirect_url = ngx.var.uri", " host:", ngx_var_host, " uri:", ngx_var_uri )
+                            ngx.log(ngx.ERR, "[Redirect][Match-Rule-Error] redirect_url is nil or not changed" )
                         end
                     end
                     return true
 
                 else
                     if handle.log == true then
-                        ngx.log(ngx.ERR, "[Redirect][Match-Rule-Error] no handler or no url_tmpl", " host:", ngx_var_host, " uri:", ngx_var_uri )
+                        ngx.log(ngx.ERR, "[Redirect][Match-Rule-Error] no handler or no url_tmpl")
                     end
                 end
 
             else
-                if rule.log == true then
-                    ngx.log(ngx.INFO, "[Redirect-NotMatch-Rule:", rule.id, "] host:", ngx_var_host, " uri:", ngx_var_uri)
+                if rule.handle and rule.handle.log == true then
+                    ngx.log(ngx.INFO, "[Redirect-NotMatch-Rule:", rule.id, "]")
                 end    
             end
         end
@@ -111,8 +114,11 @@ function RedirectHandler:redirect()
     local ngx_var_args = ngx_var.args
 
     for i, sid in ipairs(ordered_selectors) do
-        ngx.log(ngx.INFO, "[Redirect][START TO PASS THROUGH SELECTOR:", sid, "]")
         local selector = selectors[sid]
+        if selector.handle and selector.handle.log == true then
+            ngx.log(ngx.INFO, "[Redirect][START TO PASS THROUGH SELECTOR:", sid, "]")
+        end
+
         if selector and selector.enable == true then
             local selector_pass 
             if selector.type == 0 then -- 全流量 selector
@@ -123,16 +129,19 @@ function RedirectHandler:redirect()
 
             if selector_pass then
                 if selector.handle and selector.handle.log == true then
-                    ngx.log(ngx.INFO, "[Redirect][PASS-SELECTOR:", sid, "] ", ngx_var_uri)
+                    ngx.log(ngx.INFO, "[Redirect][PASS-SELECTOR:", sid, "]")
                 end
 
                 local stop = filter_rules(sid, "redirect", ngx_var_uri, ngx_var_host, ngx_var_scheme, ngx_var_args)
                 if stop then -- 已匹配该selector中的rule，不再进行执行通过后续的selector
                     return
                 end
+                if selector.handle and selector.handle.log == true then
+                    ngx.log(ngx.INFO, "[Redirect][NOT-PASS-ANY-RULE-IN-SELECTOR:", sid, "]")
+                end
             else
                 if selector.handle and selector.handle.log == true then
-                    ngx.log(ngx.INFO, "[Redirect][NOT-PASS-SELECTOR:", sid, "] ", ngx_var_uri)
+                    ngx.log(ngx.INFO, "[Redirect][NOT-PASS-SELECTOR:", sid, "]")
                 end
             end
 
