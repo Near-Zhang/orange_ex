@@ -34,7 +34,6 @@ http {
     # default upstream server
     server {
         listen 8080;
-        server_name localhost;
 
         location / {
             content_by_lua_block {

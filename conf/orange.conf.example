@@ -31,14 +31,6 @@
         },
         "desc": "mysql configuration"
     },
-    "dashboard": {
-        "auth": false,
-        "session_secret": "y0ji4pdj61aaf3f11c2e65cd2263d3e7e5",
-        "whitelist": [
-            "^/auth/login$",
-            "^/error/$"
-        ]
-    },
     "api": {
         "auth_enable": true,
         "credentials": [
