@@ -27,6 +27,7 @@ http {
     server {
         listen 8081;
         location / {
+                internal;
                 dyups_interface;
         }
     }
@@ -46,8 +47,6 @@ http {
     include nginx.conf.d/orange.conf;
     
     include nginx.conf.d/main_server.conf;
-
-    include nginx.conf.d/dashboard.conf;
     
     include nginx.conf.d/api.conf;
 
