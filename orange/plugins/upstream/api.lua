@@ -39,12 +39,13 @@ api:get("/upstream/fetch_config",function (store)
             return false
         end
 
-        data["upstream.upstreams"] = {}
+        local upstreams_table = {}
         if upstreams and type(upstreams) == "table" and #upstreams > 0 then
 	        for _ , upstream in pairs(upstreams) do
-	        	data["upstream.upstreams"][upstream.name] = json.decode(upstream.value)
+	        	upstreams_table[upstream.key] = json.decode(upstream.value)
 	        end
 	    end
+        data["upstream.upstreams"] = upstreams_table
 
 		return res:json({
 			success = true,
