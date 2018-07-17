@@ -512,17 +512,20 @@ end
 
 function _M.config_upstreams()
 
-    local function server_compose(ips,flag)
+    local function server_compose(servers,flag)
         local str = ""
-        if flag == "primary" then
-            for _ ,ip in pairs(ips) do
-                str = str .. "server "..ip.." fail_timeout=60;"
-            end
-        else
-            for _ ,ip in pairs(ips) do
-                str = str .. "server "..ip.." fail_timeout=60 backup;"
+        for _ ,server in pairs(servers) do
+            ip = server["ip"]
+            port = server["port"] and tostring(server["port"]) or '80'
+            weight = server["weight"] and tostring(server["weight"]) or '1'
+
+            if flag == "primary" then
+                str = str.."server "..ip..":"..port.." weight="..weight.." fail_timeout=60;"
+            else
+                str = str.."server "..ip..":"..port.." weight="..weight.." fail_timeout=60  backup;"
             end
         end
+
         return str
     end
 
@@ -533,11 +536,19 @@ function _M.config_upstreams()
         return
     end
 
+    local upstream_methods = {
+        "",
+        "least_conn;",
+        "ip_hash;",
+    } 
+
     for  n, v in pairs(upstreams) do
-        local wan_server = server_compose(v["primary_ips"],"primary")
-        local lan_server = server_compose(v["backup_ips"],"backup")
-        local upstream_server = wan_server..lan_server.."keepalive 512;"
-        local status, rv = dyups.update(n,upstream_server)
+        local primary_servers = server_compose(v["primary"],"primary")
+        local backup_servers = server_compose(v["backup"],"backup")
+        local type = v["type"] or 1
+        local method = upstream_methods[type] or ""
+        local upstream_servers = primary_servers..backup_servers..method.."keepalive 512;"
+        local status, rv = dyups.update(n,upstream_servers)
         if status ~= ngx.HTTP_OK then
             ngx.log(ngx.ERR, status, " upstreams updating is error :", rv)
             return false
