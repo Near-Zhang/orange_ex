@@ -328,11 +328,14 @@ CREATE TABLE `upstream` (
   UNIQUE KEY `unique_key` (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+LOCK TABLES `upstream` WRITE;
+/*!40000 ALTER TABLE `upstream` ENABLE KEYS */;
+
 INSERT INTO `upstream` (`id`, `key`, `value`, `type`, `op_time`)
 VALUES
     (1,'default_upstream','{"time":"2016-11-11 11:11:11","name":"default_upstream","primary":[{"ip":"127.0.0.1","port":8080,"weight":1],"backup":[]}','upstream','2016-11-11 11:11:11');
 
-/*!40000 ALTER TABLE `waf` ENABLE KEYS */;
+
 UNLOCK TABLES;
 
 
