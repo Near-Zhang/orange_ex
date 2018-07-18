@@ -1,4 +1,4 @@
-TO_INSTALL = api bin conf dashboard orange install
+TO_INSTALL = api bin conf orange install
 ORANGE_HOME ?= /usr/local/orange
 ORANGE_BIN ?= /usr/local/bin/orange
 ORNAGE_HOME_PATH = $(subst /,\\/,$(ORANGE_HOME))

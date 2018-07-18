@@ -84,6 +84,14 @@ api:post("/upstream/upstreams",function (store)
 	return function (req, res, next)
 		local upstream = req.body.upstream
 		upstream = json.decode(upstream)
+
+        if not upstream then
+            return res:json({
+                    success = false,
+                    msg = "upstream is not a standard json"
+                })
+        end
+
 		upstream.time = utils.now()
 
 		local create_upstream_result = dao.create_upstream("upstream" ,store, upstream)
@@ -115,6 +123,14 @@ api:put("/upstream/upstreams",function (store)
 	return function (req, res, next)
 		local upstream = req.body.upstream
 		upstream = json.decode(upstream)
+
+        if not upstream then
+            return res:json({
+                    success = false,
+                    msg = "upstream is not a standard json"
+                })
+        end
+        
 		upstream.time = utils.now()
 
         local update_upstream_result = dao.update_upstream("upstream" ,store, upstream)
