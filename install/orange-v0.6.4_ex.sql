@@ -313,6 +313,8 @@ INSERT INTO `waf` (`id`, `key`, `value`, `type`, `op_time`)
 VALUES
     (1,'1','{}','meta','2016-11-11 11:11:11');
 
+UNLOCK TABLES;
+
 
 # Dump of table upstream
 # ------------------------------------------------------------
@@ -333,8 +335,7 @@ LOCK TABLES `upstream` WRITE;
 
 INSERT INTO `upstream` (`id`, `key`, `value`, `type`, `op_time`)
 VALUES
-    (1,'default_upstream','{"time":"2016-11-11 11:11:11","name":"default_upstream","primary":[{"ip":"127.0.0.1","port":8080,"weight":1],"backup":[]}','upstream','2016-11-11 11:11:11');
-
+    (1,'default_upstream','{"time":"2016-11-11 11:11:11","name":"default_upstream","type":1,"primary":[{"ip":"127.0.0.1","port":8080,"weight":1}],"backup":[]}','upstream','2016-11-11 11:11:11');
 
 UNLOCK TABLES;
 
