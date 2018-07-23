@@ -111,6 +111,17 @@ function Orange.init_worker()
     end
 end
 
+function Orange.mirror()
+    ngx.ctx.ORANGE_MIRROR_START = now()
+
+    for _, plugin in ipairs(loaded_plugins) do
+        plugin.handler:mirror()
+    end
+
+    local now_time = now()
+    ngx.ctx.ORANGE_MIRROR_TIME = now_time - ngx.ctx.ORANGE_MIRROR_START
+    ngx.ctx.ORANGE_MIRROR_ENDED_AT = now_time
+end
 
 function Orange.redirect()
     ngx.ctx.ORANGE_REDIRECT_START = now()

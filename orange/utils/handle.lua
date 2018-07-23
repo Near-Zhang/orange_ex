@@ -46,7 +46,6 @@ function _M.build_uri(extractor_type, uri_tmpl, variables)
     return compose(extractor_type, uri_tmpl, variables)
 end
 
-
 function _M.build_upstream_host(extractor_type, upstream_host_tmpl, variables)
     return compose(extractor_type, upstream_host_tmpl, variables)
 end
@@ -54,6 +53,5 @@ end
 function _M.build_upstream_url(extractor_type, upstream_url_tmpl, variables)
     return compose(extractor_type, upstream_url_tmpl, variables)
 end
-
 
 return _M

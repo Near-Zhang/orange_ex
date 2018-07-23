@@ -12,7 +12,8 @@
         "waf",
         "divide",
         "kvstore",
-        "upstream"
+        "upstream",
+        "mirror"
     ],
     "store": "mysql",
     "store_mysql": {
