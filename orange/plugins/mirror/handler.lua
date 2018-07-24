@@ -46,20 +46,26 @@ local function filter_rules( sid, plugin, ngx_var )
                         mirror_host_tmp = handle_util.build_upstream_host(extractor_type, handle.mirror_host, variables, plugin)
                     end
 
+                	ngx.req.read_body()
                 	local options = {
                 	    method = methods[method],
-                		vars = {
+                	    vars = {
                 			rewrite_uri = ngx_var.uri,
-                			rewrite_args = ngx_var.args,
      	          			mirror_host = mirror_host_tmp,
                 			mirror_url = mirror_url_tmp
-                		}
+                		},
+                		always_forward_body = true
                 	}
 
-                	local ok,err = pcall(ngx.location.capture,"/mirror" ,options)
+                	local subquest_uri = "/mirror"
+                	if ngx_var.args then
+                		subquest_uri = subquest_uri.."?"..ngx_var.args
+                	end
+
+                	local ok,err = pcall(ngx.location.capture, subquest_uri ,options)
                 	if ok then
                 		if handle.log == true then
-                			ngx.log(ngx.ERR, "[Mirror][Mirror-To] mirrot_url:"..mirror_url_tmp.." mirror_host:"..mirror_host_tmp)
+                			ngx.log(ngx.INFO, "[Mirror][Mirror-To] mirrot_url:"..mirror_url_tmp.." mirror_host:"..mirror_host_tmp)
                 		end
                 	else
                 		if handle.log == true then
