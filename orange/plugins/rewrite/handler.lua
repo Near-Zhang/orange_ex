@@ -42,6 +42,7 @@ local function filter_rules(sid, plugin, ngx_var_uri)
 
                     if rewrite_uri and rewrite_uri ~= ngx_var_uri then
 
+                        ngx.var.rewrite_uri = rewrite_uri
                         if handle.log == true then
                             ngx.log(ngx.INFO, "[Rewrite][To-Rewrite] to:", rewrite_uri)
                         end
@@ -63,6 +64,7 @@ local function filter_rules(sid, plugin, ngx_var_uri)
                             jump = handle.jump
                         end
    
+
                         ngx_set_uri(rewrite_uri, jump)
                                                                                    
                     else

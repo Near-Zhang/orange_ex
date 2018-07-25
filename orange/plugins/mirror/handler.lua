@@ -64,6 +64,8 @@ local function filter_rules( sid, plugin, ngx_var )
 
                 	local ok,err = pcall(ngx.location.capture, subquest_uri ,options)
                 	if ok then
+                        ngx_var.mirror_url = mirror_url_tmp
+                        ngx_var.mirror_host = mirror_host_tmp
                 		if handle.log == true then
                 			ngx.log(ngx.INFO, "[Mirror][Mirror-To] mirrot_url:"..mirror_url_tmp.." mirror_host:"..mirror_host_tmp)
                 		end
