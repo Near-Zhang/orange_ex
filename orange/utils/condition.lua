@@ -122,6 +122,8 @@ function _M.judge(condition)
         real =  ngx.var.http_referer
     elseif condition_type == "Host" then
         real =  ngx.var.host
+    elseif condition_type == "Scheme" then
+        real = ngx.var.scheme
     end
 
     return assert_condition(real, operator, expected)

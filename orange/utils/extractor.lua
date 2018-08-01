@@ -48,6 +48,8 @@ local function extract_variable(extraction)
     elseif etype == "Method" then
         local method = ngx.req.get_method()
         result = string_lower(method)
+    elseif etype == "Scheme" then
+        result = ngx.var.scheme
     end
 
     return result
@@ -110,6 +112,8 @@ local function extract_variable_for_template(extractions)
         elseif etype == "Method" then
             local method = ngx.req.get_method()
             result["method"] = string_lower(method)
+        elseif etype == "Scheme" then
+            result["scheme"] = ngx_var.scheme
         end
     end
 

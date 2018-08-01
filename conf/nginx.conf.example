@@ -13,14 +13,14 @@ http {
     charset UTF-8;
     include ./mime.types;
 
-    log_format  main '$remote_addr - $remote_user [$time_local] "$request" '
+    log_format  main '$remote_addr - $remote_user [$time_local] "$request" "$host" '
     '$status $body_bytes_sent "$http_referer" '
     '"$http_user_agent" "$request_time" "$ssl_protocol" "$ssl_cipher" "$http_x_forwarded_for" '
     '"$mirror_url" "$mirror_host" "$rewrite_uri" '
     '"$upstream_addr" "$upstream_status" "$upstream_response_length" "$upstream_response_time"';
 
     access_log  ./logs/access.log  main;
-    error_log ./logs/error.log info;
+    error_log ./logs/error.log error;
 
     sendfile        on;
     keepalive_timeout  65;
@@ -36,6 +36,8 @@ http {
     # default upstream server
     server {
         listen 8080;
+        access_log off;
+        error_log off;
 
         location / {
             content_by_lua_block {

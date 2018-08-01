@@ -9,6 +9,8 @@
 - 新增mirror插件，实现流量筛选并定向复制
 - 修改divide插件中，rule中的操作相关的参数归入到handle里
 - 修复rewrite插件目的uri带查询参数的BUG、增加rewrite时的jump选项
+- 在stat插件中增加 /stat/clear 清空统计数据的api
 - 优化各个插件的错误日志打印
-- 分割配置文件，优化配置参数
+- 分割配置文件，优化配置参数，增加无reload日志切割脚本
 - 增加api传入selector、rule、upstream的value的json格式验证
+- 条件判断器、变量提取器增加Scheme数据来源

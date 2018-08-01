@@ -99,5 +99,21 @@ function _M.stat()
     return result
 end
 
+function _M.clear()
+    status:set(KEY_START_TIME, ngx.time())
+
+    status:set(KEY_TOTAL_COUNT, 0)
+    status:set(KEY_TOTAL_SUCCESS_COUNT, 0)
+
+    status:set(KEY_TRAFFIC_READ, 0)
+    status:set(KEY_TRAFFIC_WRITE, 0)
+
+    status:set(KEY_TOTAL_REQUEST_TIME, 0)
+
+    status:set(KEY_REQUEST_2XX, 0)
+    status:set(KEY_REQUEST_3XX, 0)
+    status:set(KEY_REQUEST_4XX, 0)
+    status:set(KEY_REQUEST_5XX, 0)
+end
 
 return _M
