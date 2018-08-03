@@ -5,7 +5,7 @@ local dao = require("orange.store.dao")
 local utils = require("orange.utils.utils")
 local json = require("orange.utils.json")
 
-local api = BaseAPI:new("divide-api", 2)
+local api = BaseAPI:new("upstream-api", 2)
 local common_api_table = common_api("upstream")
 
 -- get useable api from common api 
@@ -94,7 +94,7 @@ api:post("/upstream/upstreams",function (store)
 
 		upstream.time = utils.now()
 
-		local create_upstream_result = dao.create_upstream("upstream" ,store, upstream)
+		local create_upstream_result = dao.create_record("upstream" ,store, "upstream", upstream)
 		if create_upstream_result then
 			local update_local_upstreams_result = dao.update_local_upstreams("upstream", store)
         	local config_upstreams_result = dao.config_upstreams()
@@ -133,7 +133,7 @@ api:put("/upstream/upstreams",function (store)
         
 		upstream.time = utils.now()
 
-        local update_upstream_result = dao.update_upstream("upstream" ,store, upstream)
+        local update_upstream_result = dao.update_record("upstream" ,store, "upstream", upstream)
         if update_upstream_result then
         	local update_local_upstreams_result = dao.update_local_upstreams("upstream", store)
         	local config_upstreams_result = dao.config_upstreams()
@@ -169,7 +169,7 @@ api:delete("/upstream/upstreams",function (store)
             })
         end
 
-		local upstream = dao.get_upstream("upstream" ,store ,upstream_name)
+		local upstream = dao.get_record("upstream" ,store, "upstream" ,upstream_name)
 		if not upstream or not upstream.value then
             return res:json({
                 success = false,
@@ -177,7 +177,7 @@ api:delete("/upstream/upstreams",function (store)
             })
         end
 
-        local delete_upstream_result = dao.delete_upstream("upstream" ,store ,upstream_name)
+        local delete_upstream_result = dao.delete_record("upstream" ,store ,"upstream" ,upstream_name)
         if delete_upstream_result then
         	local update_local_upstreams_result = dao.update_local_upstreams("upstream", store)
         	local status, rv = dyups.delete(upstream_name)

@@ -17,6 +17,10 @@ function BasePlugin:init_worker()
     ngx.log(ngx.DEBUG, " executing plugin \"", self._name, "\": init_worker")
 end
 
+function BasePlugin:certify()
+    ngx.log(ngx.DEBUG, " executing plugin \"", self._name, "\": certify")
+end
+
 function BasePlugin:mirror()
     ngx.log(ngx.DEBUG, " executing plugin \"", self._name, "\": mirror")
 end

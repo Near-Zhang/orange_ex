@@ -89,11 +89,11 @@ function _M.stat()
         request_4xx = status:get(KEY_REQUEST_4XX),
         request_5xx = status:get(KEY_REQUEST_5XX),
 
-        con_active = ngx.var.connections_active,
+        con_active = tonumber(ngx.var.connections_active),
         con_rw = ngx.var.connections_reading + ngx.var.connections_writing,
-        con_reading = ngx.var.connections_reading,
-        con_writing = ngx.var.connections_writing,
-        con_idle = ngx.var.connections_waiting
+        con_reading = tonumber(ngx.var.connections_reading),
+        con_writing = tonumber(ngx.var.connections_writing),
+        con_idle = tonumber(ngx.var.connections_waiting)
     }
 
     return result

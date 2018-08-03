@@ -13,7 +13,8 @@
         "divide",
         "kvstore",
         "upstream",
-        "mirror"
+        "mirror",
+        "ssl"
     ],
     "store": "mysql",
     "store_mysql": {

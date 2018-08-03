@@ -313,6 +313,7 @@ INSERT INTO `waf` (`id`, `key`, `value`, `type`, `op_time`)
 VALUES
     (1,'1','{}','meta','2016-11-11 11:11:11');
 
+/*!40000 ALTER TABLE `waf` ENABLE KEYS */;
 UNLOCK TABLES;
 
 
@@ -337,6 +338,7 @@ INSERT INTO `upstream` (`id`, `key`, `value`, `type`, `op_time`)
 VALUES
     (1,'default_upstream','{"time":"2016-11-11 11:11:11","name":"default_upstream","type":1,"primary":[{"ip":"127.0.0.1","port":8080,"weight":1}],"backup":[]}','upstream','2016-11-11 11:11:11');
 
+/*!40000 ALTER TABLE `upstream` ENABLE KEYS */;
 UNLOCK TABLES;
 
 
@@ -362,8 +364,34 @@ INSERT INTO `mirror` (`id`, `key`, `value`, `type`, `op_time`)
 VALUES
     (1,'1','{}','meta','2016-11-11 11:11:11');
 
+/*!40000 ALTER TABLE `mirror` ENABLE KEYS */;
 UNLOCK TABLES;
 
+
+# Dump of table ssl
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `ssl`;
+
+CREATE TABLE `ssl` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `key` varchar(255) NOT NULL DEFAULT '',
+  `value` varchar(20000) NOT NULL DEFAULT '',
+  `type` varchar(11) DEFAULT '0',
+  `op_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_key` (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+LOCK TABLES `ssl` WRITE;
+/*!40000 ALTER TABLE `ssl` DISABLE KEYS */;
+
+INSERT INTO `ssl` (`id`, `key`, `value`, `type`, `op_time`)
+VALUES
+    (1,'default','{"time":"2016-11-11 11:11:11","name":"default","cert_pem":"crt","key_pem":"key","handle":{"log":true}}','cert','2016-11-11 11:11:11');
+
+/*!40000 ALTER TABLE `ssl` ENABLE KEYS */;
+UNLOCK TABLES;
 
 
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;

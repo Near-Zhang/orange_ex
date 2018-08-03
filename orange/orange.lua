@@ -111,6 +111,18 @@ function Orange.init_worker()
     end
 end
 
+function Orange.certify()
+    ngx.ctx.ORANGE_CERTIFY_START = now()
+
+    for _, plugin in ipairs(loaded_plugins) do
+        plugin.handler:certify()
+    end
+
+    local now_time = now()
+    ngx.ctx.ORANGE_CERTIFY_TIME = now_time - ngx.ctx.ORANGE_CERTIFY_START
+    ngx.ctx.ORANGE_CERTIFY_ENDED_AT = now_time
+end
+
 function Orange.mirror()
     ngx.ctx.ORANGE_MIRROR_START = now()
 

@@ -50,7 +50,7 @@ local function filter_rules( sid, plugin, ngx_var )
                 	local options = {
                 	    method = methods[method],
                 	    vars = {
-                			rewrite_uri = ngx_var.uri,
+                			origin_uri = ngx_var.uri,
      	          			mirror_host = mirror_host_tmp,
                 			mirror_url = mirror_url_tmp
                 		},

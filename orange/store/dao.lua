@@ -167,7 +167,7 @@ end
 
 function _M.update_local_meta(plugin, store)
     local meta, err = store:query({
-        sql = "select * from " .. plugin .. " where `type` = ? limit 1",
+        sql = "select * from `" .. plugin .. "` where `type` = ? limit 1",
         params = {"meta"}
     })
 
@@ -191,7 +191,7 @@ end
 
 function _M.update_local_selectors(plugin, store)
     local selectors, err = store:query({
-        sql = "select * from " .. plugin .. " where `type` = ?",
+        sql = "select * from `" .. plugin .. "` where `type` = ?",
         params = {"selector"}
     })
 
@@ -250,12 +250,12 @@ end
 
 function _M.update_local_upstreams(plugin, store)
     local upstreams, err = store:query({
-        sql = "select * from " .. plugin .. " where `type` = ?",
+        sql = "select * from `" .. plugin .. "` where `type` = ?",
         params = {"upstream"}
     })
 
     if err then
-        ngx.log(ngx.ERR, "error to find upstreams from storage when updating local selectors, err:", err)
+        ngx.log(ngx.ERR, "error to find upstreams from storage when updating local upstreams, err:", err)
         return false
     end
 
@@ -275,6 +275,40 @@ function _M.update_local_upstreams(plugin, store)
         local success, err, forcible = orange_db.set_json(plugin .. ".upstreams", {})
         if err or not success then
             ngx.log(ngx.ERR, "update local plugin[" .. plugin .. "] upstreams error, err:", err)
+            return false
+        end
+    end
+
+    return true
+end
+
+function _M.update_local_certs(plugin, store)
+    local certs, err = store:query({
+        sql = "select * from `" .. plugin .. "` where `type` = ?",
+        params = {"cert"}
+    })
+
+    if err then
+        ngx.log(ngx.ERR, "error to find certs from storage when updating local certs, err:", err)
+        return false
+    end
+
+    local to_update_certs = {}
+    if certs and type(certs) == "table" then
+        for _, u in ipairs(certs) do
+            to_update_certs[u.key] = json.decode(u.value or "{}")
+        end
+
+        local success, err, forcible = orange_db.set_json(plugin .. ".certs", to_update_certs)
+        if err or not success then
+            ngx.log(ngx.ERR, "update local plugin[" .. plugin .. "] certs error, err:", err)
+            return false
+        end
+    else
+        ngx.log(ngx.ERR, "the size of certs from storage is 0 when updating plugin[" .. plugin .. "] local certs")
+        local success, err, forcible = orange_db.set_json(plugin .. ".certs", {})
+        if err or not success then
+            ngx.log(ngx.ERR, "update local plugin[" .. plugin .. "] certs error, err:", err)
             return false
         end
     end
@@ -318,53 +352,54 @@ function _M.update_enable(plugin, store, enable)
     })
 end
 
-function _M.get_upstream(plugin, store, upstream_name)
-    if not upstream_name or upstream_name == "" or type(upstream_name) ~= "string" then
+function _M.get_record(plugin, store, t, condition)
+    if not condition or condition == "" or type(condition) ~= "string" then
         return nil
     end
 
-    local upstream, err = store:query({
-        sql = "select * from " .. plugin .. " where `key` = ? and `type` = ? limit 1",
-        params = { upstream_name, "upstream" }
+    local record, err = store:query({
+        sql = "select * from `" .. plugin .. "` where `key` = ? and `type` = ? limit 1",
+        params = { condition, t }
     })
 
-    if not err and upstream and type(upstream) == "table" and #upstream > 0 then
-        return upstream[1]
+    if not err and record and type(record) == "table" and #record > 0 then
+        return record[1]
     end
 
     return nil
 end
 
-function _M.delete_upstream(plugin, store, upstream_name)
-    if not upstream_name or upstream_name == "" or type(upstream_name) ~= "string" then
+function _M.delete_record(plugin, store, t, condition)
+    if not condition or condition == "" or type(condition) ~= "string" then
         return true
     end
 
     local delete_result = store:delete({
-        sql = "delete from " .. plugin .. " where `key` = ? and `type` = ?",
-        params = { upstream_name, "upstream" }
+        sql = "delete from `" .. plugin .. "` where `key` = ? and `type` = ?",
+        params = { condition, t }
     })
     if delete_result then
         return true
     else
-        ngx.log(ngx.ERR, "delete upstream err, ", upstream_name)
+        ngx.log(ngx.ERR, "delete "..t.." err, ".. condition)
         return false
     end
 end
 
-function _M.create_upstream(plugin, store, upstream)
+function _M.create_record(plugin, store, t , record)
     return store:insert({
-        sql = "insert into " .. plugin .. "(`key`, `value`, `type`, `op_time`) values(?,?,?,?)",
-        params = { upstream.name, json.encode(upstream), "upstream", upstream.time }
+        sql = "insert into `" .. plugin .. "`(`key`, `value`, `type`, `op_time`) values(?,?,?,?)",
+        params = { record.name, json.encode(record), t, record.time }
     })
 end
 
-function _M.update_upstream(plugin, store, upstream)
+function _M.update_record(plugin, store, t, record)
     return store:update({
-        sql = "update " .. plugin .. " set `value`=?,`op_time`=? where `key`=? and `type`=?",
-        params = { json.encode(upstream), upstream.time, upstream.name, "upstream" }
+        sql = "update `" .. plugin .. "` set `value`=?,`op_time`=? where `key`=? and `type`=?",
+        params = { json.encode(record), record.time, record.name, t }
     })
 end
+
 
 -- ########################### local cache init start #############################
 function _M.init_rules_of_selector(plugin, store, selector_id)
@@ -558,6 +593,39 @@ function _M.config_upstreams()
     return true
 end
 
+function _M.init_certs(plugin,store)
+    local certs, err = store:query({
+        sql = "select * from `" .. plugin .. "` where `type` = ?",
+        params = {"cert"}
+    })
+
+    if err then
+        ngx.log(ngx.ERR, "error to find cert from storage when initializing plugin[" .. plugin .. "], err:", err)
+        return false
+    end
+
+    local to_update_certs = {}
+    if certs and type(certs) == "table" then
+        for _, c in ipairs(certs) do
+            to_update_certs[c.key] = json.decode(c.value or "{}")
+        end
+        local success, err, forcible = orange_db.set_json(plugin .. ".certs", to_update_certs)
+        if err or not success then
+            ngx.log(ngx.ERR, "init local plugin[" .. plugin .. "] certs error, err:", err)
+            return false
+        end
+    else
+        ngx.log(ngx.ERR, "the size of certs from storage is 0 when initializing plugin[" .. plugin .. "] local certs")
+        local success, err, forcible = orange_db.set_json(plugin .. ".certs", {})
+        if err or not success then
+            ngx.log(ngx.ERR, "init local plugin[" .. plugin .. "] certs error, err:", err)
+            return false
+        end
+    end
+
+    return true
+end
+
 -- ########################### local cache init end #############################
 
 
@@ -680,12 +748,21 @@ function _M.load_data_by_mysql(store, plugin)
             local init_upstreams = _M.init_upstreams(v, store)
             local config_upstreams = _M.config_upstreams()
             if not init_enable or not init_upstreams or not config_upstreams then
-                ngx.log(ngx.ERR, "load data of plugin[" .. v .. "] error, init_enable:", init_enable, " init_upstreams", init_upstreams)
+                ngx.log(ngx.ERR, "load data of plugin[" .. v .. "] error, init_enable:", init_enable, " init_upstreams:", init_upstreams)
                 return false
             else
                 ngx.log(ngx.INFO, "load data of plugin[" .. v .. "] success")
             end
-        else -- ignore `stat` and `kvstore`，special done for upstream
+        elseif v == "ssl" then
+            local init_enable = _M.init_enable_of_plugin(v, store)
+            local init_certs = _M.init_certs(v, store)
+            if not init_enable or not init_certs then
+                ngx.log(ngx.ERR, "load data of plugin[" .. v .. "] error, init_enable:", init_enable, " init_certs:", init_certs)
+                return false
+            else
+                ngx.log(ngx.INFO, "load data of plugin[" .. v .. "] success")
+            end
+        else -- ignore `stat` and `kvstore`，special done for upstream and ssl
             local init_enable = _M.init_enable_of_plugin(v, store)
             local init_meta = _M.init_meta_of_plugin(v, store)
             local init_selectors_and_rules = _M.init_selectors_of_plugin(v, store)

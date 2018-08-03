@@ -7,6 +7,7 @@
 
 - 新增upstream插件，实现动态调整upstream节点（支持backup、权重、调度算法）
 - 新增mirror插件，实现流量筛选并定向复制
+- 新增ssl插件，支持https协议，并实现根据访问域名动态读取ssl证书和key
 - 修改divide插件中，rule中的操作相关的参数归入到handle里
 - 修复rewrite插件目的uri带查询参数的BUG、增加rewrite时的jump选项
 - 在stat插件中增加 /stat/clear 清空统计数据的api
