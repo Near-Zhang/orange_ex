@@ -62,7 +62,14 @@ local function filter_rules( sid, plugin, ngx_var )
                 		subquest_uri = subquest_uri.."?"..ngx_var.args
                 	end
 
-                	local ok,err = pcall(ngx.location.capture, subquest_uri ,options)
+                    local multiple = handle.multiple or 1
+                    local multi_t = {}
+
+                    for var = 1, multiple do
+                        table.insert(multi_t, {subquest_uri,options})
+                    end
+
+                	local ok,err = pcall(ngx.location.capture_multi, multi_t)
                 	if ok then
                         ngx_var.mirror_url = mirror_url_tmp
                         ngx_var.mirror_host = mirror_host_tmp
