@@ -54,7 +54,7 @@ return function(config, store)
         local plugins = {}
         for i, v in ipairs(available_plugins) do
             local tmp
-            if v ~= "kvstore" and v ~= "stat" and v ~= "upstream" then
+            if v ~= "kvstore" and v ~= "stat" and v ~= "upstream" and v ~= "ssl" then
                 tmp = {
                     enable =  orange_db.get(v .. ".enable"),
                     name = v,
