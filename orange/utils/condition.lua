@@ -6,7 +6,7 @@ local ngx_re_find = ngx.re.find
 
 local function assert_condition(real, operator, expected)
     if not real then
-        ngx.log(ngx.ERR, string_format("assert_condition error: %s %s %s", real, operator, expected))
+        ngx.log(ngx.WARN, string_format("assert_condition error: the value is %s", real))
         return false
     end
 

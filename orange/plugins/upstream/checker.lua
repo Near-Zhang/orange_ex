@@ -181,12 +181,16 @@ function _M.ups_heartbeat_checker(premature)
 
     local ok, err = ngx.timer.at(checkup_timer_interval, _M.ups_heartbeat_checker)
     if not ok then
-        ngx.log(ngx.ERR, "[Upstream] failed to create heartbeat_timer: ", err)
-        ok, err = upstream_status:set("heartbeat_timer_alive", false)
-        if not ok then
-            ngx.log(ngx.WARN, "[Upstream] failed to update upstream_status: ", err)
+        if err == "process exiting" then
+            return
+        else
+            ngx.log(ngx.ERR, "[Upstream] failed to create heartbeat_timer: ", err)
+            ok, err = upstream_status:set("heartbeat_timer_alive", false)
+            if not ok then
+                ngx.log(ngx.WARN, "[Upstream] failed to update upstream_status: ", err)
+            end
+            return
         end
-        return
     end
 end
 
