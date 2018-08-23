@@ -174,6 +174,19 @@ function Orange.access()
     ngx.ctx.ACCESSED = true
 end
 
+function Orange.balance()
+    ngx.ctx.ORANGE_BALANCE_START = now()
+
+    for _, plugin in ipairs(loaded_plugins) do
+        plugin.handler:balance()
+    end
+
+    local now_time = now()
+    ngx.ctx.ORANGE_BALANCE_TIME = now_time - ngx.ctx.ORANGE_BALANCE_START
+    ngx.ctx.ORANGE_ORANGE_BALANCE_AT = now_time
+    ngx.ctx.ORANGE_PROXY_LATENCY = now_time - ngx.req.start_time() * 1000
+    ngx.ctx.BALANCED = true
+end
 
 function Orange.header_filter()
 

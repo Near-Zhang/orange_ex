@@ -4,6 +4,8 @@ local orange_db = require("orange.store.orange_db")
 local dao = require("orange.store.dao")
 local utils = require("orange.utils.utils")
 local json = require("orange.utils.json")
+local upstream_status = ngx.shared.upstream_status
+local checker = require("orange.plugins.upstream.checker")
 
 local api = BaseAPI:new("upstream-api", 2)
 local common_api_table = common_api("upstream")
@@ -71,13 +73,63 @@ api:get("/upstream/config",function (store)
 	end
 end)
 
+api:get("/upstream/checker",function (store)
+    return function (req, res, next)
+        local function ups_status(ukey,ups)
+            local ups_statuses = {}
+            for level, peer_srvs in pairs(ups["servers"]) do
+                for _, srv in pairs(peer_srvs) do
+                    local st = checker.get_mem_srv_status(ukey, srv)
+                    local srv_key = string.format("%s.%d", srv.ip, srv.port)
+                    local status = false
+                    if not st or st.status == checker.STATUS_OK then
+                        status = true
+                    end
+                    ups_statuses[srv_key] = status
+                end
+            end
+            return ups_statuses
+        end
+
+        local data = {}
+        data["heartbeat_timer_last_run_time"] = upstream_status:get("heartbeat_timer_last_run_time")
+        data["heartbeat_timer_alive"] = upstream_status:get("heartbeat_timer_alive")
+        data["upstreams"] = {}
+
+        local upstreams = orange_db.get_json("upstream.upstreams")
+        local get_ukey = req.query.upstream_name
+        if get_ukey and get_ukey ~= "" then
+            local upstream = upstreams[get_ukey]
+            if upstream then
+                data["upstreams"][get_ukey] = ups_status(get_ukey, upstream)
+            else
+                return res:json({
+                    success = false,
+                    msg = "fail to find upstream which matchs this upstream_name"
+                    })
+            end
+        else
+            for ukey, upstream in pairs(upstreams) do
+                ngx.log(ngx.ERR,type(upstream))
+                data["upstreams"][ukey] = ups_status(ukey, upstream)
+            end
+        end
+
+        return res:json({
+            success = true,
+            data = data
+            })
+
+    end
+end)    
+
 api:get("/upstream/upstreams",function (store)
 	return function (req, res, next)
-	res:json({
-		success = true,
-		data = orange_db.get_json("upstream.upstreams")
-		})
-	end
+    	return res:json({
+    		success = true,
+    		data = orange_db.get_json("upstream.upstreams")
+    		})
+    	end
 end)
 
 api:post("/upstream/upstreams",function (store)
@@ -96,10 +148,8 @@ api:post("/upstream/upstreams",function (store)
 
 		local create_upstream_result = dao.create_record("upstream" ,store, "upstream", upstream)
 		if create_upstream_result then
-			local update_local_upstreams_result = dao.update_local_upstreams("upstream", store)
-        	local config_upstreams_result = dao.config_upstreams()
-
-            if not update_local_upstreams_result or not config_upstreams_result then
+			local update_local_upstreams_result = dao.update_local_records("upstream", store, "upstream", "upstreams")
+            if not update_local_upstreams_result then
                 return res:json({
                     success = false,
                     msg = "error to local upstreams when creating upstream"
@@ -135,10 +185,8 @@ api:put("/upstream/upstreams",function (store)
 
         local update_upstream_result = dao.update_record("upstream" ,store, "upstream", upstream)
         if update_upstream_result then
-        	local update_local_upstreams_result = dao.update_local_upstreams("upstream", store)
-        	local config_upstreams_result = dao.config_upstreams()
-
-            if not update_local_upstreams_result or not config_upstreams_result then
+        	local update_local_upstreams_result = dao.update_local_records("upstream", store, "upstream", "upstreams")
+            if not update_local_upstreams_result then
                 return res:json({
                     success = false,
                     msg = "error to local upstreams when updating upstream"
@@ -160,7 +208,6 @@ end)
 
 api:delete("/upstream/upstreams",function (store)
 	return function (req, res, next)
-		local dyups = require("ngx.dyups")
 		local upstream_name = req.body.upstream_name
 		if not upstream_name or upstream_name == "" then
             return res:json({
@@ -179,9 +226,8 @@ api:delete("/upstream/upstreams",function (store)
 
         local delete_upstream_result = dao.delete_record("upstream" ,store ,"upstream" ,upstream_name)
         if delete_upstream_result then
-        	local update_local_upstreams_result = dao.update_local_upstreams("upstream", store)
-        	local status, rv = dyups.delete(upstream_name)
-        	if not update_local_upstreams_result or status ~= ngx.HTTP_OK then
+        	local update_local_upstreams_result = dao.update_local_records("upstream", store, "upstream", "upstreams")
+            if not update_local_upstreams_result then
         			return res:json({
                     success = false,
                     msg = "error to local upstreams when deleting upstream"

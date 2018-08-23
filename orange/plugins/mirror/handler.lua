@@ -32,6 +32,8 @@ local function filter_rules( sid, plugin, ngx_var )
             	local extractor_type = rule.extractor.type
             	local method = ngx_var.request_method
             	local mirror_host_tmp = ngx_var.host
+                local mirror_url_tmp = "http://backend"
+                local mirror_name_tmp = "default_upstream"
             	local methods = {
             		GET = ngx.HTTP_GET,
             		POST = ngx.HTTP_POST,
@@ -39,12 +41,19 @@ local function filter_rules( sid, plugin, ngx_var )
             		DELETE = ngx.HTTP_DELETE
             	}
 
-                if handle and handle.mirror_url then
-                	local mirror_url_tmp = handle_util.build_upstream_url(extractor_type, handle.mirror_url, variables, plugin)
+                if handle and (handle.mirror_url or handle.mirror_name) then
 
-                	if handle.mirror_host and handle.mirror_host ~= "" then -- rebuild mirror_host
+                	if handle.mirror_host and handle.mirror_host ~= "" then -- mirror_host默认取请求的host
                         mirror_host_tmp = handle_util.build_upstream_host(extractor_type, handle.mirror_host, variables, plugin)
                     end
+
+                    if handle.mirror_url and handle.mirror_urll ~= "" then -- mirror_url默认取 http://backend
+                        mirror_url_tmp = handle_util.build_upstream_url(extractor_type, handle.mirror_url, variables, plugin)
+                    end
+
+                    if handle.mirror_name and handle.mirror_name ~= "" then -- mirror_name默认取 default_upstream
+                        mirror_name_tmp = handle.mirror_name
+                    end     
 
                 	ngx.req.read_body()
                 	local options = {
@@ -52,7 +61,8 @@ local function filter_rules( sid, plugin, ngx_var )
                 	    vars = {
                 			origin_uri = ngx_var.uri,
      	          			mirror_host = mirror_host_tmp,
-                			mirror_url = mirror_url_tmp
+                			mirror_url = mirror_url_tmp,
+                            mirror_name = mirror_name_tmp
                 		},
                 		always_forward_body = true
                 	}
@@ -73,8 +83,9 @@ local function filter_rules( sid, plugin, ngx_var )
                 	if ok then
                         ngx_var.mirror_url = mirror_url_tmp
                         ngx_var.mirror_host = mirror_host_tmp
+                        ngx_var.mirror_name = mirror_name_tmp
                 		if handle.log == true then
-                			ngx.log(ngx.INFO, "[Mirror][Mirror-To] mirrot_url:"..mirror_url_tmp.." mirror_host:"..mirror_host_tmp)
+                			ngx.log(ngx.INFO, "[Mirror][Mirror-To] mirrot_host:"..mirror_host_tmp..", mirror_url:"..mirror_url_tmp..", mirror_name:"..mirror_name_tmp)
                 		end
                 	else
                 		if handle.log == true then
@@ -109,7 +120,7 @@ function MirrorHandler:new(store)
     self.store = store
 end
 
-function MirrorHandler:mirror(conf)
+function MirrorHandler:mirror()
     MirrorHandler.super.mirror(self)
 
     local enable = orange_db.get("mirror.enable")

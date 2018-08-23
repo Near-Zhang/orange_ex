@@ -100,7 +100,7 @@ api:delete("/ssl/certs",function (store)
 
         local delete_cert_result = dao.delete_record("ssl" ,store ,"cert" ,cert_name)
         if delete_cert_result then
-        	local update_local_certs_result = dao.update_local_certs("ssl", store)
+        	local update_local_certs_result = dao.update_local_records("ssl", store, "cert", "certs")
         	if not update_local_certs_result then
         			return res:json({
                     success = false,
@@ -136,7 +136,7 @@ api:put("/ssl/certs",function (store)
 
         local update_cert_result = dao.update_record("ssl" ,store, "cert", cert)
         if update_cert_result then
-        	local update_local_certs_result = dao.update_local_certs("ssl", store)
+        	local update_local_certs_result = dao.update_local_records("ssl", store, "cert", "certs")
             if not update_local_certs_result then
                 return res:json({
                     success = false,
@@ -173,7 +173,7 @@ api:post("/ssl/certs",function (store)
 
 		local create_cert_result = dao.create_record("ssl" ,store, "cert", cert)
 		if create_cert_result then
-			local update_local_certs_result = dao.update_local_certs("ssl", store)
+			local update_local_certs_result = dao.update_local_records("ssl", store, "cert", "certs")
             if not update_local_certs_result then
                 return res:json({
                     success = false,

@@ -5,7 +5,7 @@ local ssl = require("ngx.ssl")
 
 
 function cert_config(h, v)
-	if v.handle and v.handle.log == true then
+	if v.log == true then
 		ngx.log(ngx.INFO, "[SSL][Match-Cert-Host] cert_host:",h)
 	end
 
@@ -35,7 +35,7 @@ function cert_config(h, v)
 		return
 	end
 
-	if v.handle and v.handle.log == true then
+	if v.log == true then
 		ngx.log(ngx.INFO, "[SSL][Success-SSL-Config] cert_host:",h)
 	end
 
@@ -72,12 +72,12 @@ function SSLHandler:certify()
 		    		cert_config(h, v)
 		    		return
 		    	else
-					if v.handle and v.handle.log == true then
+					if v.log == true then
 						ngx.log(ngx.INFO, "[SSL][Not-Match-Cert-Host] cert_host:",h)
 					end
 		    	end
 		    else
-		    	if v.handle and v.handle.log == true then
+		    	if v.log == true then
 						ngx.log(ngx.INFO, "[SSL][No-SNI-Host] using default cert")
 				end
 				break

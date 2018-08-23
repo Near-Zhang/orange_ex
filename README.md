@@ -1,11 +1,11 @@
 # Orange_ex
 
-## 基于orange实现
+## 参考orange的设计实现
 - https://github.com/sumory/orange.git
 
 ## 特性
 
-- 新增upstream插件，实现动态调整upstream节点（支持backup、权重、调度算法）
+- 新增upstream插件，增加balance阶段，实现针对upstream组的自定义主动健康检查和被动健康检查，实现wrr和一致性hash调度算法，包含普通模式和严格模式
 - 新增mirror插件，实现流量筛选并定向复制
 - 新增ssl插件，支持https协议，并实现根据访问域名动态读取ssl证书和key
 - 修改divide插件中，rule中的操作相关的参数归入到handle里

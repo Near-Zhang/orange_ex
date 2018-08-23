@@ -336,7 +336,7 @@ LOCK TABLES `upstream` WRITE;
 
 INSERT INTO `upstream` (`id`, `key`, `value`, `type`, `op_time`)
 VALUES
-    (1,'default_upstream','{"time":"2016-11-11 11:11:11","name":"default_upstream","type":1,"primary":[{"ip":"127.0.0.1","port":8080,"weight":1}],"backup":[]}','upstream','2016-11-11 11:11:11');
+    (1,'default_upstream','{"time":"2016-11-11 11:11:11","name":"default_upstream","type":1,"comment":"默认上游","log":true,"servers":[[{"ip":"127.0.0.1","port":8080,"weight":1}]]}','upstream','2016-11-11 11:11:11');
 
 /*!40000 ALTER TABLE `upstream` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -388,7 +388,7 @@ LOCK TABLES `ssl` WRITE;
 
 INSERT INTO `ssl` (`id`, `key`, `value`, `type`, `op_time`)
 VALUES
-    (1,'default','{"time":"2016-11-11 11:11:11","name":"default","cert_pem":"crt","key_pem":"key","handle":{"log":true}}','cert','2016-11-11 11:11:11');
+    (1,'default','{"time":"2016-11-11 11:11:11","name":"default","comment":"默认证书","cert_pem":"crt","key_pem":"key","log":true}','cert','2016-11-11 11:11:11');
 
 /*!40000 ALTER TABLE `ssl` ENABLE KEYS */;
 UNLOCK TABLES;

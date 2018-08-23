@@ -10,7 +10,6 @@
         "name":"default",
         "cert_pem":"pem编码证书字符串",
         "key_pem":"pem编码的key字符串",
-        "handle":{
-            "log":true/false
-        }
+        "comment":"备注信息",
+        "log":true/false
     }

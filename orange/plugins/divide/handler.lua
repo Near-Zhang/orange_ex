@@ -9,14 +9,6 @@ local extractor_util = require("orange.utils.extractor")
 local handle_util = require("orange.utils.handle")
 local BasePlugin = require("orange.plugins.base_handler")
 
-
-local function ensure_end(uri)
-    if not stringy.endswith(uri, "/") then
-        uri = uri.."/"
-    end
-    return uri
-end
-
 local function filter_rules(sid, plugin, ngx_var, ngx_var_uri, ngx_var_host)
     local rules = orange_db.get_json(plugin .. ".selector." .. sid .. ".rules")
     if not rules or type(rules) ~= "table" or #rules <= 0 then
@@ -43,23 +35,28 @@ local function filter_rules(sid, plugin, ngx_var, ngx_var_uri, ngx_var_host)
                 end
 
                 local extractor_type = rule.extractor.type
-                if handle and handle.upstream_url then
-                    if not handle.upstream_host or handle.upstream_host=="" then -- host默认取请求的host
+                if handle and (handle.upstream_url or handle.upstream_name) then
+                    if not handle.upstream_host or handle.upstream_host=="" then -- upstream_host默认取请求的host
                         ngx_var.upstream_host = ngx_var_host
                     else 
                         ngx_var.upstream_host = handle_util.build_upstream_host(extractor_type, handle.upstream_host, variables, plugin)
                     end
 
-                     ngx_var.upstream_url = handle_util.build_upstream_url(extractor_type, handle.upstream_url, variables, plugin)
+                    if handle.upstream_url and handle.upstream_url ~= "" then -- upstream_url默认取 http://backend
+                        ngx_var.upstream_url = handle_util.build_upstream_url(extractor_type, handle.upstream_url, variables, plugin)
+                    end
+
+                    if handle.upstream_name and handle.upstream_name ~= "" then -- upstream_name默认取 default_upstream
+                        ngx_var.upstream_name = handle.upstream_name
+                    end                  
 
                     if handle.log == true then
-                        ngx.log(ngx.INFO, "[Divide][Proxy-Upstream]"," extractor_type:", extractor_type,
-                            " upstream_host:", ngx_var.upstream_host, " upstream_url:", ngx_var.upstream_url)
+                        ngx.log(ngx.INFO, "[Divide][Proxy-Upstream] upstream_host:", ngx_var.upstream_host, ", upstream_url:", ngx_var.upstream_url, ", upstream_name:", ngx_var.upstream_name)
                     end
 
                 else
                     if handle.log == true then
-                        ngx.log(ngx.ERR, "[Divide][Match-Rule-Error] no handle or upstream_url")
+                        ngx.log(ngx.ERR, "[Divide][Match-Rule-Error] no config about upstream_url or upstream_name")
                     end
                 end
 
