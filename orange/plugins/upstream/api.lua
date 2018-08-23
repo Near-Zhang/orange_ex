@@ -93,7 +93,7 @@ api:get("/upstream/checker",function (store)
 
         local data = {}
         data["heartbeat_timer_last_run_time"] = upstream_status:get("heartbeat_timer_last_run_time")
-        data["heartbeat_timer_alive"] = upstream_status:get("heartbeat_timer_alive")
+        data["heartbeat_timer_alive"] = upstream_status:get("heartbeat_timer_alive") or false
         data["upstreams"] = {}
 
         local upstreams = orange_db.get_json("upstream.upstreams")

@@ -162,14 +162,18 @@ function _M.ups_heartbeat_checker(premature)
         ngx.sleep(0.1)
     until config_load == false
 
-    upstream_status:set("heartbeat_timer_last_run_time", localtime())
-    upstream_status:set("heartbeat_timer_alive", true, checkup_timer_overtime)
-
     local enable = orange_db.get("upstream.enable")
     local upstreams = orange_db.get_json("upstream.upstreams")
     if not enable or enable ~= true or not upstreams then
+        local ok, err = upstream_status:set("heartbeat_timer_alive", false)
+        if not ok then
+            ngx.log(ngx.ERR, "[upstream] heartbeat dead and failed to update upstream_status: ", err)
+        end
         return
     end
+
+    upstream_status:set("heartbeat_timer_last_run_time", localtime())
+    upstream_status:set("heartbeat_timer_alive", true, checkup_timer_overtime)
 
     for ukey, upstream in pairs(upstreams) do
         ups_heartbeat(ukey, upstream)
