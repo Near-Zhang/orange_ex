@@ -54,7 +54,32 @@ return function(config, store)
         local plugins = {}
         for i, v in ipairs(available_plugins) do
             local tmp
-            if v ~= "kvstore" and v ~= "stat" and v ~= "upstream" and v ~= "ssl" then
+            if v == "kvstore" and v == "stat" then
+                tmp = {
+                    enable = (v=="stat") and true or (orange_db.get(v .. ".enable") or false),
+                    name = v
+                }
+            elseif  v == "upstream" then
+                tmp = {
+                    enable =  orange_db.get(v .. ".enable"),
+                    name = v,
+                    upstream_count = 0
+                }
+                local upstreams =  orange_db.get_json(v .. ".upstreams")
+                for _, r in pairs(upstreams) do
+                    tmp.upstream_count = tmp.upstream_count + 1
+                end         
+            elseif v == "ssl" then
+                tmp = {
+                    enable =  orange_db.get(v .. ".enable"),
+                    name = v,
+                    ssl_count = 0
+                } 
+                local certs =  orange_db.get_json(v .. ".certs")
+                for _, r in pairs(certs) do
+                    tmp.ssl_count = tmp.ssl_count + 1
+                end 
+            else 
                 tmp = {
                     enable =  orange_db.get(v .. ".enable"),
                     name = v,
@@ -81,11 +106,7 @@ return function(config, store)
                         end
                     end
                 end
-            else
-                tmp = {
-                    enable = (v=="stat") and true or (orange_db.get(v .. ".enable") or false),
-                    name = v
-                }
+            
             end
             
             plugins[v] = tmp

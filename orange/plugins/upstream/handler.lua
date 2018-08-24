@@ -14,15 +14,14 @@ end
 function UpstreamHandler:init_worker()
     UpstreamHandler.super.init_worker(self)
 
-    if ngx.worker.id() ~= 0 then
-        return
+    if ngx.worker.id() == 0 then
+        local ok, err = ngx.timer.at(0, checker.ups_heartbeat_checker)
+        if not ok then
+            ngx.log(ngx.ERR, "[Upstream][Failed-To-Create-Ups-Heartbeat-checker] ", err)
+            return
+        end
     end
-
-    local ok, err = ngx.timer.at(0, checker.ups_heartbeat_checker)
-    if not ok then
-        ngx.log(ngx.ERR, "[Upstream][Failed-To-Create-Ups-Heartbeat-checker] ", err)
-        return
-    end
+    
 end
 
 function UpstreamHandler:balance()

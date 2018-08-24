@@ -42,7 +42,10 @@ api:get("/ssl/fetch_config",function (store)
         local certs_table = {}
         if certs and type(certs) == "table" and #certs > 0 then
 	        for _ , cert in pairs(certs) do
-	        	certs_table[cert.key] = json.decode(cert.value)
+                value = json.decode(cert.value)
+                value["key_pem"] = "the key is hiden"
+                value["cert_pem"] = "the cert is hiden"
+	        	certs_table[cert.key] = value
 	        end
 	    end
         data["ssl.certs"] = certs_table
@@ -62,9 +65,13 @@ api:get("/ssl/config",function (store)
         data["enable"] = enable
 
         local certs = orange_db.get_json("ssl.certs")
+        for name, cert in pairs(certs) do
+            cert["key_pem"] = "the key is hiden"
+            cert["cert_pem"] = "the cert is hiden"
+        end
         data["certs"] = certs
 
-		res:json({
+		return res:json({
 			success = true,
 			data = data
 			})
@@ -73,11 +80,16 @@ end)
 
 api:get("/ssl/certs",function (store)
 	return function (req, res, next)
-	res:json({
-		success = true,
-		data = orange_db.get_json("ssl.certs")
-		})
-	end
+        local certs = orange_db.get_json("ssl.certs")
+        for name, cert in pairs(certs) do
+            cert["key_pem"] = "the key is hiden"
+            cert["cert_pem"] = "the cert is hiden"
+        end
+    	return res:json({
+    		success = true,
+    		data = certs
+    		})
+    end
 end)
 
 api:delete("/ssl/certs",function (store)
