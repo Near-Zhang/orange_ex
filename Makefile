@@ -5,9 +5,9 @@ ORNAGE_HOME_PATH = $(subst /,\\/,$(ORANGE_HOME))
 
 .PHONY: test install show
 init-config:
-	@ test -f conf/nginx.conf   || (cp conf/nginx.conf.example conf/nginx.conf && echo "copy nginx.conf")
-	@ test -d conf/nginx.conf.d || (cp -a conf/nginx.conf.d.example conf/nginx.conf.d && echo "copy nginx.conf.d")
-	@ test -f conf/orange.conf  || (cp conf/orange.conf.example conf/orange.conf && echo "copy orange.conf")
+	@ rm -f conf/nginx.conf && (cp conf/nginx.conf.example conf/nginx.conf && echo "copy nginx.conf")
+	@ rm -rf conf/nginx.conf.d && (cp -a conf/nginx.conf.d.example conf/nginx.conf.d && echo "copy nginx.conf.d")
+	@ rm -f conf/orange.conf && (cp conf/orange.conf.example conf/orange.conf && echo "copy orange.conf")
 
 test:
 	@echo "to be continued..."
