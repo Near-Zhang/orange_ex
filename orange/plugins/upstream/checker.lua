@@ -278,7 +278,7 @@ function _M.select_peer(ukey)
 	local worker_id = ngx.worker.id()
 	local config_updated = orange_db.get("upstream.updated."..tostring(worker_id))
 
-	if not config_updated then
+	if not config_updated or not next(_M.checkups_list) then
         local upstreams = orange_db.get_json("upstream.upstreams")
 	    for uk, upstream in pairs(upstreams) do
 	        _M.checkups_list[uk] = upstream
