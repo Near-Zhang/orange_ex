@@ -75,10 +75,12 @@ local function init_consistent_hash_state(peer_srvs)
     local circle = {}
     local members = #peer_srvs
     local unit = MOD / (weight_sum * REPLICAS)
+    local weight_idx = 1
 
     for index, srv in ipairs(peer_srvs) do
         for w = 1, (srv.weight or 1) do
-            local base_hash = ((w - 1) * members + index) * unit
+            local base_hash = weight_idx * unit
+            weight_idx = weight_idx + 1
             for c = 0, REPLICAS - 1 do
                 local hash = (base_hash + c * unit * weight_sum) % MOD
                 table.insert(circle, { hash, index })
