@@ -70,22 +70,23 @@ local function init_consistent_hash_state(peer_srvs)
     for _, srv in ipairs(peer_srvs) do
         weight_sum = weight_sum + (srv.weight or 1)
     end
+    local replicas = REPLICAS * weight_sum
 
-    local circle, members = {}, 0
+    local circle = {}
+    local members = #peer_srvs
+    local unit = MOD / (weight_sum * REPLICAS)
+
     for index, srv in ipairs(peer_srvs) do
-        local key = ("%s.%d"):format(srv.ip, srv.port)
-        local base_hash = hash_string(key)
-        local replicas = REPLICAS * weight_sum
-        for c = 1, replicas do
-            -- more replicas balance hash
-            local hash = (base_hash + c * MOD / replicas ) % MOD
-            table.insert(circle, { hash, index })
+        for w = 1, (srv.weight or 1) do
+            local base_hash = ((w - 1) * members + index) * unit
+            for c = 0, REPLICAS - 1 do
+                local hash = (base_hash + c * unit * weight_sum) % MOD
+                table.insert(circle, { hash, index })
+            end
         end
-        members = members + 1
     end
 
     table.sort(circle, function(a, b) return a[1] < b[1] end)
-
     return { circle = circle, members = members }
 end
 
@@ -146,7 +147,7 @@ local function prepare_callbacks(ukey, checker)
 
     local levels_count = #ups.servers
     local srvs_count = 0
-    for level, peer_srvs in pairs(ups.servers) do
+    for level, peer_srvs in ipairs(ups.servers) do
         srvs_count = srvs_count + #peer_srvs
     end
 

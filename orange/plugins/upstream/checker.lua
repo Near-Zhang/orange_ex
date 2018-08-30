@@ -90,7 +90,7 @@ end
 
 local function ups_heartbeat(ukey, upstream)
 	local srv_count = 0
-	for level, peer_srvs in pairs(upstream.servers) do
+	for level, peer_srvs in ipairs(upstream.servers) do
         if peer_srvs and #peer_srvs > 0 then
             srv_count = srv_count + #peer_srvs
         end
@@ -104,7 +104,7 @@ local function ups_heartbeat(ukey, upstream)
     local fail_time = upstream.checker_fail_time or 3
     local success_time = upstream.checker_success_time or 3
 
-    for level, peer_srvs in pairs(upstream.servers) do
+    for level, peer_srvs in ipairs(upstream.servers) do
         for _, srv in ipairs(peer_srvs) do
             local srvkey = string.format("%s.%s.%d", ukey, srv.ip, srv.port)
             local status, err = srv_heartbeat(srv.ip, srv.port, timeout)
@@ -137,6 +137,7 @@ local function ups_heartbeat(ukey, upstream)
     if next(ups_status) then
         if error_count == srv_count then
             ups_status[1].status = _M.STATUS_OK
+            ngx.log(ngx.ERR,"[upstream] no servers alive, start to protect mode, upstream_name:", ukey, "backup srv:", ups_status[1].srvkey)
         end
         update_mem_ups_status(ups_status, fail_time, success_time)
     end
@@ -208,7 +209,7 @@ function _M.feedback_status(ukey, ip, port, failed)
     end
 
     local srv
-    for level, peer_srvs in pairs(upstream.servers) do
+    for level, peer_srvs in ipairs(upstream.servers) do
         for _, s in ipairs(peer_srvs) do
             if s.ip == ip and s.port == port then
                 srv = s
@@ -258,7 +259,7 @@ function _M.set_var_srv_status(ukey, upstream, srv, failed)
         srv_status.failed_count = srv_status.failed_count + 1
 
         if srv_status.failed_count >= max_fails then
-            for level, peer_srvs in pairs(upstream.servers) do
+            for level, peer_srvs in ipairs(upstream.servers) do
                 for _, s in ipairs(peer_srvs) do
                     local key = string.format("%s.%d", s.ip, s.port)
                     local st = ups_status[key]
