@@ -137,7 +137,7 @@ local function ups_heartbeat(ukey, upstream)
     if next(ups_status) then
         if error_count == srv_count then
             ups_status[1].status = _M.STATUS_OK
-            ngx.log(ngx.ERR,"[upstream] no servers alive, start to protect mode, upstream_name:", ukey, "backup srv:", ups_status[1].srvkey)
+            ngx.log(ngx.ERR,"[upstream] no servers alive, start to protect mode, upstream_name:", ukey, " backup srv:", ups_status[1].srvkey)
         end
         update_mem_ups_status(ups_status, fail_time, success_time)
     end
