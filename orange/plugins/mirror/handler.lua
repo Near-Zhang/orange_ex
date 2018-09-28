@@ -3,6 +3,7 @@ local orange_db = require("orange.store.orange_db")
 local judge_util = require("orange.utils.judge")
 local extractor_util = require("orange.utils.extractor")
 local handle_util = require("orange.utils.handle")
+local utils = require("orange.utils.utils")
 
 local function filter_rules( sid, plugin, ngx_var )
 	local rules = orange_db.get_json(plugin .. ".selector." .. sid .. ".rules")
@@ -28,6 +29,15 @@ local function filter_rules( sid, plugin, ngx_var )
                 if handle and handle.log == true then
                     ngx.log(ngx.INFO, "[Mirror][Match-Rule:", rule.id, "]")
                 end
+
+                if not ngx_var.junhai_trace_id or ngx_var.junhai_trace_id == "" then
+                    ngx_var.junhai_trace_id = utils.new_id()     -- set new trace id
+                    ngx.ctx.junhai_trace_id = ngx_var.junhai_trace_id   -- store trace id
+                else
+                    ngx.ctx.junhai_trace_id = ngx_var.junhai_trace_id   -- store trace id
+                end
+                ngx.log(ngx.ERR, "[Mirror]ID: ", ngx_var.junhai_trace_id, "]")
+
 
             	local extractor_type = rule.extractor.type
             	local method = ngx_var.request_method
@@ -62,7 +72,8 @@ local function filter_rules( sid, plugin, ngx_var )
                 			origin_uri = ngx_var.uri,
      	          			mirror_host = mirror_host_tmp,
                 			mirror_url = mirror_url_tmp,
-                            mirror_name = mirror_name_tmp
+                            mirror_name = mirror_name_tmp,
+                            junhai_trace_id = ngx_var.junhai_trace_id
                 		},
                 		always_forward_body = true
                 	}

@@ -34,6 +34,13 @@ local function filter_rules(sid, plugin, ngx_var, ngx_var_uri, ngx_var_host)
                     ngx.log(ngx.INFO, "[Divide][Match-Rule:", rule.id, "]")
                 end
 
+               if not ngx_var.junhai_trace_id or ngx_var.junhai_trace_id == "" then
+                    ngx_var.junhai_trace_id = utils.new_id() -- use new trace id
+                else
+                    ngx_var.junhai_trace_id = ngx.ctx.junhai_trace_id -- use stored trace id
+                end
+                ngx.log(ngx.ERR, "[Divide]trace_id: ", ngx_var.junhai_trace_id, "]")
+
                 local extractor_type = rule.extractor.type
                 if handle and (handle.upstream_url or handle.upstream_name) then
                     if not handle.upstream_host or handle.upstream_host=="" then -- upstream_host默认取请求的host

@@ -137,7 +137,7 @@ local function ups_heartbeat(ukey, upstream)
     if next(ups_status) then
         if error_count == srv_count then
             ups_status[1].status = _M.STATUS_OK
-            ngx.log(ngx.ERR,"[upstream] no servers alive, start to protect mode, upstream_name:", ukey, " backup srv:", ups_status[1].srvkey)
+            ngx.log(ngx.ERR,"[Upstream] no servers alive, start to protect mode, upstream_name:", ukey, " backup srv:", ups_status[1].srvkey)
         end
         update_mem_ups_status(ups_status, fail_time, success_time)
     end
@@ -147,10 +147,10 @@ function _M.ups_heartbeat_checker(premature)
     ngx.update_time()
 
     if premature then
-        ngx.log(ngx.ERR,"[upstream] heartbeat timer is premature and going to dead")
+        ngx.log(ngx.ERR,"[Upstream] heartbeat timer is premature and going to dead")
         local ok, err = upstream_status:set("heartbeat_timer_alive", false)
         if not ok then
-            ngx.log(ngx.ERR, "[upstream] heartbeat dead and failed to update upstream_status: ", err)
+            ngx.log(ngx.ERR, "[Upstream] heartbeat dead and failed to update upstream_status: ", err)
         end
         return
     end
@@ -163,7 +163,7 @@ function _M.ups_heartbeat_checker(premature)
         config_load = orange_db.get("upstream.updated.0")
         if config_load == nil then
             ngx.sleep(0.1)
-            ngx.log(ngx.WARN,"[upstream] waiting loading config")
+            ngx.log(ngx.WARN,"[Upstream] waiting loading config")
         else
             break
         end
@@ -172,10 +172,10 @@ function _M.ups_heartbeat_checker(premature)
     local enable = orange_db.get("upstream.enable")
     local upstreams = orange_db.get_json("upstream.upstreams")
     if not enable or enable ~= true or not upstreams then
-        ngx.log(ngx.ERR,"[upstream] upstream plugin is not enable and timer going to dead")
+        ngx.log(ngx.ERR,"[Upstream] upstream plugin is not enable and timer going to dead")
         local ok, err = upstream_status:set("heartbeat_timer_alive", false)
         if not ok then
-            ngx.log(ngx.ERR, "[upstream] heartbeat dead and failed to update upstream_status: ", err)
+            ngx.log(ngx.ERR, "[Upstream] heartbeat dead and failed to update upstream_status: ", err)
         end
         return
     end
