@@ -39,7 +39,6 @@ local function filter_rules(sid, plugin, ngx_var, ngx_var_uri, ngx_var_host)
                 else
                     ngx_var.junhai_trace_id = ngx.ctx.junhai_trace_id -- use stored trace id
                 end
-                ngx.log(ngx.ERR, "[Divide]trace_id: ", ngx_var.junhai_trace_id, "]")
 
                 local extractor_type = rule.extractor.type
                 if handle and (handle.upstream_url or handle.upstream_name) then

@@ -148,7 +148,7 @@ function _M.ups_heartbeat_checker(premature)
 
     if premature then
         ngx.log(ngx.ERR,"[Upstream] heartbeat timer is premature and going to dead")
-        local ok, err = upstream_status:set("heartbeat_timer_alive", false)
+        local ok, err = upstream_status:set("heartbeat_timer_alive", 2)
         if not ok then
             ngx.log(ngx.ERR, "[Upstream] heartbeat dead and failed to update upstream_status: ", err)
         end
@@ -172,31 +172,28 @@ function _M.ups_heartbeat_checker(premature)
     local enable = orange_db.get("upstream.enable")
     local upstreams = orange_db.get_json("upstream.upstreams")
     if not enable or enable ~= true or not upstreams then
-        ngx.log(ngx.ERR,"[Upstream] upstream plugin is not enable and timer going to dead")
-        local ok, err = upstream_status:set("heartbeat_timer_alive", false)
+        ngx.log(ngx.ERR,"[Upstream] upstream plugin is not enable and timer is stopping check")
+        local ok, err = upstream_status:set("heartbeat_timer_alive", 1)
         if not ok then
-            ngx.log(ngx.ERR, "[Upstream] heartbeat dead and failed to update upstream_status: ", err)
+            ngx.log(ngx.ERR, "[Upstream] heartbeat stop and failed to update upstream_status: ", err)
         end
-        return
+    else
+        for ukey, upstream in pairs(upstreams) do
+            ups_heartbeat(ukey, upstream)
+        end
+        upstream_status:set("heartbeat_timer_last_run_time", localtime())
+        upstream_status:set("heartbeat_timer_alive", 0, checkup_timer_overtime)
     end
-
-    for ukey, upstream in pairs(upstreams) do
-        ups_heartbeat(ukey, upstream)
-    end
-
-    upstream_status:set("heartbeat_timer_last_run_time", localtime())
-    upstream_status:set("heartbeat_timer_alive", true, checkup_timer_overtime)
 
     local ok, err = ngx.timer.at(checkup_timer_interval, _M.ups_heartbeat_checker)
     if not ok then
-        ngx.log(ngx.ERR, "[Upstream] failed to create heartbeat_timer: ", err)
-        ok, err = upstream_status:set("heartbeat_timer_alive", false)
+        ngx.log(ngx.ERR, "[Upstream] heartbeat stop because of failed to create heartbeat_timer: ", err)
+        ok, err = upstream_status:set("heartbeat_timer_alive", 2)
         if not ok then
             ngx.log(ngx.WARN, "[Upstream] failed to update upstream_status: ", err)
         end
         return
-    end
-    
+    end    
 end
 
 -- feedback status to var checkups_status
@@ -293,14 +290,14 @@ function _M.select_peer(ukey)
     end
 
     local request_srv_func
-    if not ups.strict_check and ups.strict_check ~= true then
+    if ups.strict_check and ups.strict_check == true then
 	    request_srv_func = function(ip, port)
-	       return { ip=ip, port=port }
-	    end
+            return { ip=ip, port=port, status=STATUS_OK}
+        end
 	else
-		request_srv_func = function(ip, port, timeout)
-			return { ip=ip, port=port, status=srv_heartbeat(ip, port, timeout)}
-		end
+        request_srv_func = function(ip, port)
+           return { ip=ip, port=port }
+        end
 	end
 
     return try.try_ups(ukey, _M, request_srv_func)

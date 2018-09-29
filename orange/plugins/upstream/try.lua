@@ -274,7 +274,6 @@ function _M.try_ups(ukey, checker, request_srv_func)
     local set_status_cb = callbacks.set_status_cb
 
     local ups = checker.checkups_list[ukey]
-    local timeout = ups.checker_timeout or 3
 
     -- iter servers function
     local itersrvs = function(servers, peer_srv_alive_cb)
@@ -293,7 +292,7 @@ function _M.try_ups(ukey, checker, request_srv_func)
         for srv, err in itersrvs(peer_srvs, peer_srv_alive_cb) do
             -- exec request callback by server
             local start_time = ngx.now()
-            res, err = request_srv_func(srv.ip, srv.port, timeout)
+            res, err = request_srv_func(srv.ip, srv.port)
 
             -- check whether need retry
             local end_time = ngx.now()
