@@ -113,7 +113,7 @@ local function next_consistent_hash_server(peer_srvs, peer_srv_alive_cb, hash_ke
 
     local chash = peer_srvs.chash
     if chash.members == 1 then
-        if peer_srv_alive_cb(1, peer_srvs[1]) then
+        if peer_srv_alive_cb(peer_srvs[1]) then
             return peer_srvs[1]
         end
 
