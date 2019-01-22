@@ -1,15 +1,8 @@
 {
     "plugins": [
         "stat",
-        "monitor",
         "redirect",
         "rewrite",
-        "rate_limiting",
-        "property_rate_limiting",
-        "basic_auth",
-        "key_auth",
-        "signature_auth",
-        "waf",
         "divide",
         "kvstore",
         "upstream",
