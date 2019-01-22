@@ -46,33 +46,6 @@ VALUES
 UNLOCK TABLES;
 
 
-# Dump of table dashboard_user
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `dashboard_user`;
-
-CREATE TABLE `dashboard_user` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `username` varchar(60) NOT NULL DEFAULT '' COMMENT '用户名',
-  `password` varchar(255) NOT NULL DEFAULT '' COMMENT '密码',
-  `is_admin` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否是管理员账户：0否，1是',
-  `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '创建或者更新时间',
-  `enable` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否启用该用户：0否1是',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='dashboard users';
-
-LOCK TABLES `dashboard_user` WRITE;
-/*!40000 ALTER TABLE `dashboard_user` DISABLE KEYS */;
-
-INSERT INTO `dashboard_user` (`id`, `username`, `password`, `is_admin`, `create_time`, `enable`)
-VALUES
-    (1,'admin','1fe832a7246fd19b7ea400a10d23d1894edfa3a5e09ee27e0c4a96eb0136763d',1,'2016-11-11 11:11:11',1);
-
-/*!40000 ALTER TABLE `dashboard_user` ENABLE KEYS */;
-UNLOCK TABLES;
-
-
 # Dump of table divide
 # ------------------------------------------------------------
 
@@ -139,6 +112,20 @@ CREATE TABLE `meta` (
   UNIQUE KEY `unique_key` (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+LOCK TABLES `meta` WRITE;
+/*!40000 ALTER TABLE `meta` DISABLE KEYS */;
+
+INSERT INTO `meta` (`id`, `key`, `value`, `op_time`)
+VALUES
+    (1, 'redirect.enable', '1', '2016-11-11 11:11:11'),
+    (2, 'rewrite.enable', '1', '2016-11-11 11:11:11'),
+    (3, 'upstream.enable', '1', '2016-11-11 11:11:11'),
+    (4, 'divide.enable', '1', '2016-11-11 11:11:11'),
+    (5, 'ssl.enable', '1', '2016-11-11 11:11:11'),
+    (6, 'mirror.enable', '1', '2016-11-11 11:11:11');
+
+/*!40000 ALTER TABLE `meta` ENABLE KEYS */;
+UNLOCK TABLES;
 
 
 # Dump of table monitor
