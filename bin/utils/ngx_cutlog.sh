@@ -10,7 +10,7 @@ log_file=( access.log error.log api_access.log api_error.log )
 oldlog_path=${oldlog_base}$Y/$M/
 
 [ -d $oldlog_path ] || mkdir -p $oldlog_path
-for f in $log_file
+for f in ${log_file[*]}
 do
 	if [ -s ${log_path}${f} ];then 
     	cp -a ${log_path}${f} ${oldlog_path}$( echo $f|cut -d'.' -f1 )-${time}.log  

@@ -14,13 +14,14 @@ http {
     charset UTF-8;
     include ./mime.types;
 
-    log_format  main '$remote_addr - $remote_user [$time_local] "$request" "$host" '
-    '$status $body_bytes_sent "$http_referer" '
-    '"$http_user_agent" "$request_time" "$ssl_protocol" "$ssl_cipher" "$http_x_forwarded_for" '
-    '"$mirror_host" "$mirror_url" "$mirror_name" "$rewrite_uri" '
-    '"$upstream_host" "$upstream_url" "$upstream_name" '
-    '"$upstream_addr" "$upstream_status" "$upstream_response_length" "$upstream_response_time" '
-    '"$junhai_trace_id"';
+    log_format  main '['
+    '"$remote_addr", "$remote_user", "$time_local", "$request", "$host", '
+    '$status, $body_bytes_sent, $request_time, "$http_referer", "$http_user_agent", '
+    '"$ssl_protocol", "$ssl_cipher", [$http_x_forwarded_for], "$junhai_trace_id", '
+    '"$mirror_host", "$mirror_url", "$mirror_name", "$rewrite_uri", '
+    '"$upstream_host", "$upstream_url", "$upstream_name", '
+    '[$upstream_addr], [$upstream_status], [$upstream_response_length], [$upstream_response_time]'
+    ']';
 
     log_format  api '$remote_addr - $remote_user [$time_local] "$request" '
     '$status $body_bytes_sent "$http_referer" '

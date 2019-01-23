@@ -78,7 +78,7 @@ local function filter_rules( sid, plugin, ngx_var )
                 		always_forward_body = true
                 	}
 
-                	local subquest_uri = "/mirror"
+                	local subquest_uri = "/mirror-plugin-of-api-gateway"
                 	if ngx_var.args then
                 		subquest_uri = subquest_uri.."?"..ngx_var.args
                 	end
