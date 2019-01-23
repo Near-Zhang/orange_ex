@@ -6,7 +6,7 @@ oldlog_base=/usr/local/orange/logs/oldlogs/
 time=$( date +"%F" -d -1day )
 Y=$( echo $time|cut -d'-' -f1 )
 M=$( echo $time|cut -d'-' -f2 )
-log_file=( access.log )
+log_file=( access.log error.log api_access.log api_error.log )
 oldlog_path=${oldlog_base}$Y/$M/
 
 [ -d $oldlog_path ] || mkdir -p $oldlog_path
@@ -19,4 +19,4 @@ do
     	tar -czf ./$( echo $f|cut -d'.' -f1 )-${time}.log.tar.gz ./$( echo $f|cut -d'.' -f1 )-${time}.log --remove-files
 	fi
 done
-find $oldlog_base -mtime +60 -exec rm -f {} \;
+find $oldlog_base -mtime +180 -exec rm -f {} \;
