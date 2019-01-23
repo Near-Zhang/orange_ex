@@ -30,14 +30,9 @@ local function filter_rules( sid, plugin, ngx_var )
                     ngx.log(ngx.INFO, "[Mirror][Match-Rule:", rule.id, "]")
                 end
 
-                if not ngx_var.junhai_trace_id or ngx_var.junhai_trace_id == "" then
+                if not ngx_var.junhai_trace_id or ngx_var.junhai_trace_id == "" or ngx_var.junhai_trace_id == "-" then
                     ngx_var.junhai_trace_id = utils.new_id()     -- set new trace id
-                    ngx.ctx.junhai_trace_id = ngx_var.junhai_trace_id   -- store trace id
-                else
-                    ngx.ctx.junhai_trace_id = ngx_var.junhai_trace_id   -- store trace id
                 end
-                ngx.log(ngx.ERR, "[Mirror]ID: ", ngx_var.junhai_trace_id, "]")
-
 
             	local extractor_type = rule.extractor.type
             	local method = ngx_var.request_method
@@ -57,7 +52,7 @@ local function filter_rules( sid, plugin, ngx_var )
                         mirror_host_tmp = handle_util.build_upstream_host(extractor_type, handle.mirror_host, variables, plugin)
                     end
 
-                    if handle.mirror_url and handle.mirror_urll ~= "" then -- mirror_url默认取 http://backend
+                    if handle.mirror_url and handle.mirror_url ~= "" then -- mirror_url默认取 http://backend
                         mirror_url_tmp = handle_util.build_upstream_url(extractor_type, handle.mirror_url, variables, plugin)
                     end
 
@@ -68,12 +63,12 @@ local function filter_rules( sid, plugin, ngx_var )
                 	ngx.req.read_body()
                 	local options = {
                 	    method = methods[method],
-                	    vars = {
-                			origin_uri = ngx_var.uri,
-     	          			mirror_host = mirror_host_tmp,
-                			mirror_url = mirror_url_tmp,
-                            mirror_name = mirror_name_tmp,
-                            junhai_trace_id = ngx_var.junhai_trace_id
+                	    ctx = {
+                			sub_origin_uri = ngx_var.uri,
+     	          			sub_upstream_host = mirror_host_tmp,
+                			sub_upstream_url = mirror_url_tmp,
+                            sub_upstream_name = mirror_name_tmp,
+                            sub_junhai_trace_id = ngx_var.junhai_trace_id
                 		},
                 		always_forward_body = true
                 	}
