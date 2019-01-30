@@ -27,7 +27,7 @@ http {
     '"$http_user_agent" "$request_time" "$ssl_protocol" "$ssl_cipher" "$http_x_forwarded_for"';
 
     access_log off;
-    error_log ./logs/error.log error;
+    error_log ./logs/error.log warn;
 
     sendfile        on;
     keepalive_timeout  65;
